@@ -1,9 +1,9 @@
 ## Pagoda: Rapid, easy full-stack web development starter kit in Go
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/mikestefanello/pagoda)](https://goreportcard.com/report/github.com/mikestefanello/pagoda)
-[![Test](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml/badge.svg)](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Arash-Afshar/pagoda-tailwindcss)](https://goreportcard.com/report/github.com/Arash-Afshar/pagoda-tailwindcss)
+[![Test](https://github.com/Arash-Afshar/pagoda-tailwindcss/actions/workflows/test.yml/badge.svg)](https://github.com/Arash-Afshar/pagoda-tailwindcss/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Reference](https://pkg.go.dev/badge/github.com/mikestefanello/pagoda.svg)](https://pkg.go.dev/github.com/mikestefanello/pagoda)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Arash-Afshar/pagoda-tailwindcss.svg)](https://pkg.go.dev/github.com/Arash-Afshar/pagoda-tailwindcss)
 [![GoT](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 [![Slack Widget](https://img.shields.io/badge/join-us%20on%20slack-gray.svg?longCache=true&logo=slack&colorB=red)](https://gophers.slack.com/messages/pagoda)
@@ -150,12 +150,19 @@ Ensure that [Go](https://go.dev/) is installed on your system.
 
 ### Start the application
 
-After checking out the repository, from within the root, simply run `make run`:
+After checking out the repository, from within the root, run the following commands:
 
 ```
-git clone git@github.com:mikestefanello/pagoda.git
-cd pagoda
-make run
+git clone git@github.com:Arash-Afshar/pagoda-tailwindcss.git
+cd pagoda-tailwindcss
+make setup
+```
+
+In order to run the app in development mode, open two terminals and run the following commands in separate terminals:
+
+```
+make dev
+make dev-css
 ```
 
 Since this repository is a _template_ and not a Go _library_, you **do not** use `go get`.
