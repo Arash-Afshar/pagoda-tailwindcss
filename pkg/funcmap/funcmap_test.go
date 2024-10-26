@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/labstack/echo/v4"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
+	"github.com/labstack/echo/v4"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -32,11 +32,11 @@ func TestLink(t *testing.T) {
 	f := new(funcMap)
 
 	link := string(f.link("/abc", "Text", "/abc"))
-	expected := `<a class="is-active" href="/abc">Text</a>`
+	expected := `<a class="active" href="/abc">Text</a>`
 	assert.Equal(t, expected, link)
 
 	link = string(f.link("/abc", "Text", "/abc", "first", "second"))
-	expected = `<a class="first second is-active" href="/abc">Text</a>`
+	expected = `<a class="first second active" href="/abc">Text</a>`
 	assert.Equal(t, expected, link)
 
 	link = string(f.link("/abc", "Text", "/def"))
