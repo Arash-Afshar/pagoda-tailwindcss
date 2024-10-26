@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/mikestefanello/pagoda/pkg/tests"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
 
 	"github.com/stretchr/testify/assert"
 

@@ -1,7 +1,8 @@
 {{define "content"}}
     {{- if not (eq .HTMX.Request.Target "contact")}}
-        <article class="message is-link">
-            <div class="message-body">
+        <article class="alert alert-info">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div>
                 <p>This is an example of a form with inline, server-side validation and HTMX-powered AJAX submissions without writing a single line of JavaScript.</p>
                 <p>Only the form below will update async upon submission.</p>
             </div>
@@ -13,53 +14,54 @@
 
 {{define "form"}}
     {{- if .Form.IsDone}}
-        <article class="message is-large is-success">
-            <div class="message-header">
-                <p>Thank you!</p>
+        <div class="alert alert-success">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div>
+                <h3 class="font-bold">Thank you!</h3>
+                <div class="text-sm">No email was actually sent but this entire operation was handled server-side and degrades without JavaScript enabled.</div>
             </div>
-            <div class="message-body">
-                No email was actually sent but this entire operation was handled server-side and degrades without JavaScript enabled.
-            </div>
-        </article>
+        </div>
     {{- else}}
-        <form id="contact" method="post" hx-post="{{url "contact.submit"}}">
-            <div class="field">
-                <label for="email" class="label">Email address</label>
-                <div class="control">
-                    <input id="email" name="email" type="email" class="input {{.Form.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
-                </div>
+        <form id="contact" method="post" hx-post="{{url "contact.submit"}}" class="form-control w-full">
+            <div class="mb-4">
+                <label for="email" class="label">
+                    <span class="label-text">Email address</span>
+                </label>
+                <input id="email" name="email" type="email" class="input input-bordered w-full {{.Form.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
                 {{template "field-errors" (.Form.GetFieldErrors "Email")}}
             </div>
 
-            <div class="control">
-                <label class="label">Department</label>
-                <label class="radio">
-                    <input type="radio" name="department" value="sales" {{if eq .Form.Department "sales"}}checked{{end}}/>
-                    Sales
+            <div class="mb-4">
+                <label class="label">
+                    <span class="label-text">Department</span>
                 </label>
-                <label class="radio">
-                    <input type="radio" name="department" value="marketing" {{if eq .Form.Department "marketing"}}checked{{end}}/>
-                    Marketing
-                </label>
-                <label class="radio">
-                    <input type="radio" name="department" value="hr" {{if eq .Form.Department "hr"}}checked{{end}}/>
-                    HR
-                </label>
+                <div class="flex flex-row gap-2 justify-start w-full">
+                    <label class="label cursor-pointer">
+                        <span class="label-text mr-2">Sales</span>
+                        <input type="radio" name="department" value="sales" class="radio" {{if eq .Form.Department "sales"}}checked{{end}}/>
+                    </label>
+                    <label class="label cursor-pointer">
+                        <span class="label-text mr-2">Marketing</span>
+                        <input type="radio" name="department" value="marketing" class="radio" {{if eq .Form.Department "marketing"}}checked{{end}}/>
+                    </label>
+                    <label class="label cursor-pointer">
+                        <span class="label-text mr-2">HR</span>
+                        <input type="radio" name="department" value="hr" class="radio" {{if eq .Form.Department "hr"}}checked{{end}}/>
+                    </label>
+                </div>
                 {{template "field-errors" (.Form.GetFieldErrors "Department")}}
             </div>
 
-            <div class="field">
-                <label for="message" class="label">Message</label>
-                <div class="control">
-                    <textarea id="message" name="message" class="textarea {{.Form.GetFieldStatusClass "Message"}}">{{.Form.Message}}</textarea>
-                </div>
+            <div class="mb-4">
+                <label for="message" class="label">
+                    <span class="label-text">Message</span>
+                </label>
+                <textarea id="message" name="message" class="textarea textarea-bordered h-24 w-full {{.Form.GetFieldStatusClass "Message"}}">{{.Form.Message}}</textarea>
                 {{template "field-errors" (.Form.GetFieldErrors "Message")}}
             </div>
 
-            <div class="field is-grouped">
-                <div class="control">
-                    <button class="button is-link">Submit</button>
-                </div>
+            <div class="mt-6 flex flex-row justify-start">
+                <button class="btn btn-primary">Submit</button>
             </div>
 
             {{template "csrf" .}}

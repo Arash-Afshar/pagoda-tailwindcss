@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -40,8 +40,8 @@ func TestFormSubmission(t *testing.T) {
 		require.Len(t, form.GetFieldErrors("Name"), 1)
 		assert.Len(t, form.GetFieldErrors("Email"), 0)
 		assert.Equal(t, "This field is required.", form.GetFieldErrors("Name")[0])
-		assert.Equal(t, "is-danger", form.GetFieldStatusClass("Name"))
-		assert.Equal(t, "is-success", form.GetFieldStatusClass("Email"))
+		assert.Equal(t, "input-error", form.GetFieldStatusClass("Name"))
+		assert.Equal(t, "input-success", form.GetFieldStatusClass("Email"))
 		assert.False(t, form.IsDone())
 
 		formInCtx := Get[formTest](ctx)

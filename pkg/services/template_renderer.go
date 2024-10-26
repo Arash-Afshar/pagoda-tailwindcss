@@ -10,11 +10,11 @@ import (
 	"sync"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mikestefanello/pagoda/config"
-	"github.com/mikestefanello/pagoda/pkg/context"
-	"github.com/mikestefanello/pagoda/pkg/log"
-	"github.com/mikestefanello/pagoda/pkg/page"
-	"github.com/mikestefanello/pagoda/templates"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/context"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/log"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/page"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/templates"
 )
 
 // cachedPageGroup stores the cache group for cached pages

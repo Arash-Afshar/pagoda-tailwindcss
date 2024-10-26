@@ -1,39 +1,53 @@
 {{define "content"}}
     {{- if .Data.FrontendTabs}}
-        <p class="subtitle mt-5">Frontend</p>
-        <p class="mb-4">The following incredible projects make developing advanced, modern frontends possible and simple without having to write a single line of JS or CSS. You can go extremely far without leaving the comfort of Go with server-side rendered HTML.</p>
-        {{template "tabs" .Data.FrontendTabs}}
-        <div class="mb-4"></div>
+        <div class="prose">
+            <h4 class="mt-5">Frontend</h4>
+            <p class="mb-4">The following incredible projects make developing advanced, modern frontends possible and simple without having to write a single line of JS or CSS. You can go extremely far without leaving the comfort of Go with server-side rendered HTML.</p>
+            {{template "tabs" .Data.FrontendTabs}}
+            <div class="mb-4"></div>
+        </div>
     {{- end}}
 
     {{- if .Data.BackendTabs}}
-        <p class="subtitle mt-5">Backend</p>
-        <p class="mb-4">The following incredible projects provide the foundation of the Go backend. See the repository for a complete list of included projects.</p>
-        {{template "tabs" .Data.BackendTabs}}
-        <div class="mb-4"></div>
+        <div class="prose">
+            <h4 class="mt-5">Backend</h4>
+            <p class="mb-4">The following incredible projects provide the foundation of the Go backend. See the repository for a complete list of included projects.</p>
+            {{template "tabs" .Data.BackendTabs}}
+            <div class="mb-4"></div>
+        </div>
     {{end}}
 
     {{- if .Data.ShowCacheWarning}}
-        <article class="message is-warning mt-6">
-            <div class="message-header">
-                <p>Warning</p>
-            </div>
-            <div class="message-body">
-                This route has caching enabled so hot-reloading in the local environment will not work.
+        <article role="alert" class="alert alert-warning mt-4" x-data="{show: true}" x-show="show">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6 shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+                <h3 class="font-bold">Warning</h3>
+                <p class="text-xs">
+                    This route has caching enabled so hot-reloading in the local environment will not work.
+                </p>
+              </div>
             </div>
         </article>
     {{- end}}
 {{end}}
 
 {{define "tabs"}}
-    <div x-data="{tab: 0}">
-        <div class="tabs">
-            <ul>
-                {{- range $index, $tab := .}}
-                    <li :class="{'is-active': tab === {{$index}}}" @click="tab = {{$index}}"><a>{{.Title}}</a></li>
-                {{- end}}
-            </ul>
-        </div>
+    <div x-data="{tab: 0}" class="min-w-full">
+        <div role="tablist" class="tabs tabs-bordered">
+            {{- range $index, $tab := .}}
+                <div role="tab" class="tab" :class="{'tab-active': tab === {{$index}}}" @click="tab = {{$index}}">{{.Title}}</div>
+            {{- end}}
+          </div>
         {{- range $index, $tab := .}}
             <div x-show="tab == {{$index}}"><p> &rarr; {{.Body}}</p></div>
         {{- end}}

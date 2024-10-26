@@ -1,39 +1,83 @@
 <!DOCTYPE html>
-<html lang="en" style="height:100%;">
+<html lang="en" class="bg-base-100">
     <head>
         {{template "metatags" .}}
         {{template "css" .}}
         {{template "js" .}}
     </head>
-    <body class="has-background-light" style="min-height:100%;">
-        <nav class="navbar is-dark">
-            <div class="container">
-                <div class="navbar-brand" hx-boost="true">
-                    <a href="{{url "home"}}" class="navbar-item">{{.AppName}}</a>
+    <body style="min-height:100%;" >
+        <nav class="navbar bg-neutral text-neutral-content">
+            <div class="container mx-auto">
+                <div class="flex-1">
+                    <a href="{{url "home"}}" class="btn btn-ghost text-xl">{{.AppName}}</a>
                 </div>
-                <div id="navbarMenu" class="navbar-menu">
-                    <div class="navbar-end">
-                        {{template "search" .}}
+                <div class="flex-none">
+                    <div class="dropdown dropdown-end">
+                        <div class="navbar-end">
+                            {{template "search" .}}
+                        </div>
                     </div>
                 </div>
+
+<div class="dropdown dropdown-end">
+    <div tabindex="0" role="button" class="btn btn-ghost rounded-btn">
+      Theme
+      <svg
+        width="12px"
+        height="12px"
+        class="inline-block h-2 w-2 fill-current opacity-60"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 2048 2048">
+        <path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path>
+      </svg>
+    </div>
+    <ul tabindex="0" class="dropdown-content bg-neutral text-neutral-content rounded-box z-[1] w-52 p-2 shadow-2xl">
+      <li>
+        <input
+          type="radio"
+          name="theme-dropdown"
+          class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
+          aria-label="Default"
+          value="default" />
+      </li>
+      {{- range (.GetThemes)}}
+      <li>
+        <input
+          type="radio"
+          name="theme-dropdown"
+          class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
+          aria-label="{{.}}"
+          value="{{.}}"
+          hx-on:change="storeTheme('{{.}}')" />
+      </li>
+      {{- end}}
+    </ul>
+</div>
+
             </div>
         </nav>
 
-        <div class="container mt-5">
-            <div class="columns">
-                <div class="column is-2">
-                    <aside class="menu" hx-boost="true">
-                        <p class="menu-label">General</p>
-                        <ul class="menu-list">
-                            <li>{{link (url "home") "Dashboard" .Path}}</li>
-                            <li>{{link (url "about") "About" .Path}}</li>
-                            <li>{{link (url "contact") "Contact" .Path}}</li>
-                            <li>{{link (url "cache") "Cache" .Path}}</li>
-                            <li>{{link (url "task") "Task" .Path}}</li>
+        <div class="container mx-auto">
+            <div class="grid grid-cols-12 gap-8">
+                <div class="col-span-2">
+                    <aside hx-boost="true">
+                        <ul class="menu">
+                          <li>
+                            <h2 class="menu-title">General</h2>
+                            <ul>
+                              <li>{{link (url "home") "Dashboard" .Path}}</li>
+                              <li>{{link (url "about") "About" .Path}}</li>
+                              <li>{{link (url "contact") "Contact" .Path}}</li>
+                              <li>{{link (url "cache") "Cache" .Path}}</li>
+                              <li>{{link (url "task") "Task" .Path}}</li>
+                            </ul>
+                          </li>
                         </ul>
 
-                        <p class="menu-label">Account</p>
-                        <ul class="menu-list">
+                        <ul class="menu">
+                          <li>
+                            <h2 class="menu-title">Account</h2>
+                            <ul>
                             {{- if .IsAuth}}
                                 <li>{{link (url "logout") "Logout" .Path}}</li>
                             {{- else}}
@@ -41,14 +85,18 @@
                                 <li>{{link (url "register") "Register" .Path}}</li>
                                 <li>{{link (url "forgot_password") "Forgot password" .Path}}</li>
                             {{- end}}
+                            </ul>
+                          </li>
                         </ul>
                     </aside>
                 </div>
 
-                <div class="column is-10">
-                    <div class="box">
+                <div class="col-span-10">
+                    <div class="m-4 bg-base-200 p-4 rounded-box">
                         {{- if .Title}}
-                            <h1 class="title">{{.Title}}</h1>
+                            <div class="prose">
+                                <h1>{{.Title}}</h1>
+                            </div>
                         {{- end}}
 
                         {{template "messages" .}}
@@ -59,34 +107,40 @@
         </div>
 
         {{template "footer" .}}
+<script>
+  function storeTheme(theme) {
+    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+</script>
     </body>
 </html>
 
 {{define "search"}}
-    <div class="search mr-2 mt-1" x-data="{modal:false}">
-        <input class="input" type="search" placeholder="Search..." @click="modal = true; $nextTick(() => $refs.input.focus());"/>
-        <div class="modal" :class="modal ? 'is-active' : ''" x-show="modal == true">
-            <div class="modal-background"></div>
-            <div class="modal-content" @click.outside="modal = false;">
-                <div class="box">
-                    <h2 class="subtitle">Search</h2>
-                    <p class="control">
+    <div x-data="{}">
+        <input class="input" type="search" placeholder="Search..." @click="search_modal.showModal(); $nextTick(() => $refs.input.focus());"/>
+        <dialog id="search_modal" class="modal">
+            <div class="modal-box">
+                <div class="prose">
+                    <h2>Search</h2>
+                    <p>
                         <input
                             hx-get="{{url "search"}}"
                             hx-trigger="keyup changed delay:500ms"
                             hx-target="#results"
                             name="query"
-                            class="input"
+                            class="input w-full"
                             type="search"
                             placeholder="Search..."
                             x-ref="input"
                         />
                     </p>
-                    <div class="block"></div>
-                    <div id="results"></div>
+                    <ul id="results"></ul>
                 </div>
             </div>
-            <button class="modal-close is-large" aria-label="close"></button>
-        </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
     </div>
 {{end}}

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/mikestefanello/pagoda/pkg/context"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/context"
 
 	"github.com/labstack/echo/v4"
 )
@@ -76,9 +76,9 @@ func (f *Submission) GetFieldErrors(fieldName string) []string {
 func (f *Submission) GetFieldStatusClass(fieldName string) string {
 	if f.isSubmitted {
 		if f.FieldHasErrors(fieldName) {
-			return "is-danger"
+			return "input-error"
 		}
-		return "is-success"
+		return "input-success"
 	}
 	return ""
 }

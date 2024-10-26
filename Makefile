@@ -1,6 +1,10 @@
-# Install Ent code-generation module
-.PHONY: ent-install
-ent-install:
+.PHONY: setup
+setup:
+	npm install -D tailwindcss
+	npm install -D @tailwindcss/typography
+	npm i -D daisyui@latest
+	npm install
+	go install github.com/air-verse/air@latest
 	go get entgo.io/ent/cmd/ent
 
 # Generate Ent code
@@ -13,11 +17,14 @@ ent-gen:
 ent-new:
 	go run entgo.io/ent/cmd/ent new $(name)
 
-# Run the application
-.PHONY: run
-run:
+.PHONY: dev
+dev:
 	clear
-	go run cmd/web/main.go
+	air -c .air.toml
+
+.PHONY: dev-css
+dev-css:
+	npx tailwindcss -i tailwind-styles.css -o static/styles.css --postcss --watch
 
 # Run all tests
 .PHONY: test

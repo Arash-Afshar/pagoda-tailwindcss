@@ -1,5 +1,5 @@
 {{define "content"}}
     {{- range .Data}}
-        <a class="panel-block" href="{{.URL}}">{{.Title}}</a>
+        <li><a class="link link-hover" href="{{.URL}}">{{.Title}}</a></li>
     {{- end}}
 {{end}}

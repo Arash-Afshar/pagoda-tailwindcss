@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mikestefanello/pagoda/ent"
-	"github.com/mikestefanello/pagoda/pkg/context"
-	"github.com/mikestefanello/pagoda/pkg/htmx"
-	"github.com/mikestefanello/pagoda/pkg/msg"
-	"github.com/mikestefanello/pagoda/templates"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/context"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/htmx"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/msg"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/templates"
 
 	echomw "github.com/labstack/echo/v4/middleware"
 
@@ -122,7 +122,7 @@ type Page struct {
 	}
 }
 
-// New creates and initiatizes a new Page for a given request context
+// New creates and initializes a new Page for a given request context
 func New(ctx echo.Context) Page {
 	p := Page{
 		Context:    ctx,
@@ -159,4 +159,12 @@ func (p Page) GetMessages(typ msg.Type) []template.HTML {
 		ret[k] = template.HTML(v)
 	}
 	return ret
+}
+
+func (p Page) GetDefaultTheme() Theme {
+	return defaultTheme()
+}
+
+func (p Page) GetThemes() []Theme {
+	return GetAllThemes()
 }

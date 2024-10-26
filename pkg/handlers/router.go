@@ -5,9 +5,9 @@ import (
 
 	"github.com/gorilla/sessions"
 	echomw "github.com/labstack/echo/v4/middleware"
-	"github.com/mikestefanello/pagoda/config"
-	"github.com/mikestefanello/pagoda/pkg/middleware"
-	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/middleware"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
 )
 
 // BuildRouter builds the router

@@ -12,9 +12,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mikestefanello/pagoda/pkg/handlers"
-	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/pkg/tasks"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/handlers"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tasks"
 )
 
 func main() {

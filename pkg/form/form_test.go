@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mikestefanello/pagoda/pkg/context"
-	"github.com/mikestefanello/pagoda/pkg/tests"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/context"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -11,20 +11,20 @@
 {{end}}
 
 {{define "top-content"}}
-    <section class="hero is-info welcome is-small">
-        <div class="hero-body">
-            <div class="container">
-                <h1 class="title">
-                    Hello{{if .IsAuth}}, {{.AuthUser.Name}}{{end}}
-                </h1>
-                <h2 class="subtitle">{{if .IsAuth}}Welcome back!{{else}}Please login in to your account.{{end}}</h2>
-            </div>
+    <section class="bg-secondary text-secondary-content p-5">
+      <div>
+        <div>
+            <h1 class="text-2xl font-bold">
+                Hello{{if .IsAuth}}, {{.AuthUser.Name}}{{end}}
+            </h1>
+            <h2 class="text-md">{{if .IsAuth}}Welcome back!{{else}}Please login in to your account.{{end}}</h2>
         </div>
+      </div>
     </section>
 
-    <section class="section">
-        <h1 class="title">Recent posts</h1>
-        <h2 class="subtitle">
+    <section class="prose p-4">
+        <h2>Recent posts</h1>
+        <h3>
             Below is an example of both paging and AJAX fetching using HTMX
         </h2>
     </section>
@@ -33,50 +33,57 @@
 {{define "posts"}}
     <div id="posts">
         {{- range .Data}}
-            <article class="media">
-                <figure class="media-left">
-                    <p class="image is-64x64">
-                        <img src="{{file "gopher.png"}}" alt="Gopher"/>
-                    </p>
+            <article class="card card-side">
+                <figure class="size-20 self-center">
+                    <img src="{{file "gopher.png"}}" alt="Gopher"/>
                 </figure>
-                <div class="media-content">
-                    <div class="content">
-                        <p>
-                            <strong>{{.Title}}</strong>
-                            <br>
-                            {{.Body}}
-                        </p>
-                    </div>
+                <div class="p-3">
+                    <h2 class="card-title">{{.Title}}</h2>
+                    <p>{{.Body}}</p>
                 </div>
             </article>
+            <div class="divider"></div>
+
         {{- end}}
 
-        <div class="field is-grouped is-grouped-centered">
-            {{- if not $.Pager.IsBeginning}}
-                <p class="control">
-                    <button class="button is-primary" hx-swap="outerHTML" hx-get="/?page={{sub $.Pager.Page 1}}" hx-target="#posts">Previous page</button>
-                </p>
-            {{- end}}
-            {{- if not $.Pager.IsEnd}}
-                <p class="control">
-                    <button class="button is-primary" hx-swap="outerHTML" hx-get="/?page={{add $.Pager.Page 1}}" hx-target="#posts">Next page</button>
-                </p>
-            {{- end}}
+        <div class="flex justify-center">
+            <div class="flex flex-row gap-5">
+                {{- if not $.Pager.IsBeginning}}
+                    <p class="control">
+                        <button class="btn btn-primary" hx-swap="outerHTML" hx-get="/?page={{sub $.Pager.Page 1}}" hx-target="#posts">Previous page</button>
+                    </p>
+                {{- end}}
+                {{- if not $.Pager.IsEnd}}
+                    <p class="control">
+                        <button class="btn btn-primary" hx-swap="outerHTML" hx-get="/?page={{add $.Pager.Page 1}}" hx-target="#posts">Next page</button>
+                    </p>
+                {{- end}}
+            </div>
         </div>
     </div>
 {{end}}
 
 {{define "file-msg"}}
-    <div class="block"></div>
-    <article class="message is-small is-warning" x-data="{show: true}" x-show="show">
-        <div class="message-header">
-            <p>Serving files</p>
-            <button class="delete is-small" aria-label="delete" @click="show = false"></button>
-        </div>
-        <div class="message-body">
-            In the example posts above, check how the file URL contains a cache-buster query parameter which changes only when the app is restarted.
-            Static files also contain cache-control headers which are configured via middleware.
-            You can also use AlpineJS to dismiss this message.
+    <article role="alert" class="alert alert-warning mt-4" x-data="{show: true}" x-show="show">
+        <button @click="show = false">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6 shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </button>
+        <div>
+            <h3 class="font-bold">Serving files</h3>
+            <p class="text-xs">
+                In the example posts above, check how the file URL contains a cache-buster query parameter which changes only when the app is restarted.
+            </p>
+          </div>
         </div>
     </article>
 {{end}}

@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mikestefanello/pagoda/pkg/page"
-	"github.com/mikestefanello/pagoda/pkg/tests"
-	"github.com/mikestefanello/pagoda/templates"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/page"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/templates"
 
 	"github.com/stretchr/testify/require"
 

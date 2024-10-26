@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mikestefanello/pagoda/ent"
-	"github.com/mikestefanello/pagoda/pkg/session"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/session"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -9,7 +9,7 @@ import (
 	"github.com/Masterminds/sprig"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/random"
-	"github.com/mikestefanello/pagoda/config"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
 )
 
 var (
@@ -57,7 +57,7 @@ func (fm *funcMap) file(filepath string) string {
 // link outputs HTML for a link element, providing the ability to dynamically set the active class
 func (fm *funcMap) link(url, text, currentPath string, classes ...string) template.HTML {
 	if currentPath == url {
-		classes = append(classes, "is-active")
+		classes = append(classes, "active")
 	}
 
 	html := fmt.Sprintf(`<a class="%s" href="%s">%s</a>`, strings.Join(classes, " "), url, text)
