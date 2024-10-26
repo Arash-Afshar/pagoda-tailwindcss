@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/gorilla/sessions"
-	"github.com/mikestefanello/pagoda/pkg/session"
-	"github.com/mikestefanello/pagoda/pkg/tests"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/session"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

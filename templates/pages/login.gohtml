@@ -1,28 +1,34 @@
 {{define "content"}}
-    <form method="post" hx-boost="true" action="{{url "login.submit"}}">
-        {{template "messages" .}}
-        <div class="field">
-            <label for="email" class="label">Email address</label>
-            <div class="control">
-                <input id="email" type="email" name="email" class="input {{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
-                {{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
-            </div>
+<form method="post" hx-boost="true" action="{{url " login.submit"}}">
+    {{template "messages" .}}
+
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text">Email</span>
         </div>
-        <div class="field">
-            <label for="password" class="label">Password</label>
-            <div class="control">
-                <input id="password" type="password" name="password" placeholder="*******" class="input {{.Form.Submission.GetFieldStatusClass "Password"}}">
-                {{template "field-errors" (.Form.Submission.GetFieldErrors "Password")}}
-            </div>
+        <div>
+            <input id="email" type="email" name="email"
+                class="w-full input input-bordered {{.Form.Submission.GetFieldStatusClass " Email"}}"
+                value="{{.Form.Email}}">
+            {{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
         </div>
-        <div class="field is-grouped">
-            <p class="control">
-                <button class="button is-primary">Log in</button>
-            </p>
-            <p class="control">
-                <a href="{{url "home"}}" class="button is-light">Cancel</a>
-            </p>
+    </label>
+
+    <label class="form-control w-full mb-4">
+        <div class="label">
+            <span class="label-text">Password</span>
         </div>
-        {{template "csrf" .}}
-    </form>
+        <div>
+            <input id="password" type="password" name="password" placeholder="*******"
+                class="w-full input input-bordered {{.Form.Submission.GetFieldStatusClass " Password"}}">
+            {{template "field-errors" (.Form.Submission.GetFieldErrors "Password")}}
+        </div>
+    </label>
+
+    <div class="flex flex-row justify-end gap-5 mb-4">
+        <div><button class="btn btn-primary">Log in</button></div>
+        <div><a href="{{url "home"}}" class="btn btn-neutral">Cancel</a></div>
+    </div>
+    {{template "csrf" .}}
+</form>
 {{end}}

@@ -1,34 +1,35 @@
 {{define "content"}}
-    <form id="task" method="post" hx-post="{{url "cache.submit"}}">
-        <article class="message">
-            <div class="message-header">
-                <p>Test the cache</p>
-            </div>
-            <div class="message-body">
-                This route handler shows how the default in-memory cache works. Try updating the value using the form below and see how it persists after you reload the page.
-                HTMX makes it easy to re-render the cached value after the form is submitted.
-            </div>
-        </article>
-
-        <label for="value" class="label">Value in cache: </label>
-        {{if .Data}}
-            <span class="tag is-success">{{.Data}}</span>
-        {{- else}}
-            <i>(empty)</i>
-        {{- end}}
-        <br/><br/>
-
-        <div class="field">
-            <label for="value" class="label">Value</label>
-            <div class="control">
-                <input id="value" name="value" class="input" value="{{.Form.Value}}"/>
+    <form id="task" method="post" hx-post="{{url "cache.submit"}}" class="space-y-4">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Test the cache</h2>
+                <p>
+                    This route handler shows how the default in-memory cache works. Try updating the value using the form below and see how it persists after you reload the page.
+                    HTMX makes it easy to re-render the cached value after the form is submitted.
+                </p>
             </div>
         </div>
 
-        <div class="field is-grouped">
-            <div class="control">
-                <button class="button is-link">Update cache</button>
-            </div>
+        <div class="form-control">
+            <label for="value" class="label">
+                <span class="label-text">Value in cache:</span>
+            </label>
+            {{if .Data}}
+                <span class="badge badge-success">{{.Data}}</span>
+            {{- else}}
+                <span class="italic text-gray-500">(empty)</span>
+            {{- end}}
+        </div>
+
+        <div class="form-control">
+            <label for="value" class="label">
+                <span class="label-text">Value</span>
+            </label>
+            <input id="value" name="value" type="text" class="input input-bordered" value="{{.Form.Value}}"/>
+        </div>
+
+        <div class="form-control mt-6 flex flex-row justify-start">
+            <button class="btn btn-primary">Update cache</button>
         </div>
 
         {{template "csrf" .}}

@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/mikestefanello/pagoda/config"
-	"github.com/mikestefanello/pagoda/ent"
-	"github.com/mikestefanello/pagoda/ent/passwordtoken"
-	"github.com/mikestefanello/pagoda/ent/user"
-	"github.com/mikestefanello/pagoda/pkg/context"
-	"github.com/mikestefanello/pagoda/pkg/session"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/context"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/session"
 
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"

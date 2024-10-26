@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mikestefanello/pagoda/config"
-	"github.com/mikestefanello/pagoda/ent"
-	"github.com/mikestefanello/pagoda/pkg/tests"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
 
 	"github.com/labstack/echo/v4"
 )

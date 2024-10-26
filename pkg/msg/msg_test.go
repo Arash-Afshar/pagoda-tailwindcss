@@ -3,7 +3,7 @@ package msg
 import (
 	"testing"
 
-	"github.com/mikestefanello/pagoda/pkg/tests"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

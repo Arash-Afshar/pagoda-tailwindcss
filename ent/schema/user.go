@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	ge "github.com/mikestefanello/pagoda/ent"
-	"github.com/mikestefanello/pagoda/ent/hook"
+	ge "github.com/Arash-Afshar/pagoda-tailwindcss/ent"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/hook"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"

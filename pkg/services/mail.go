@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/mikestefanello/pagoda/config"
-	"github.com/mikestefanello/pagoda/pkg/log"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/log"
 
 	"github.com/labstack/echo/v4"
 )

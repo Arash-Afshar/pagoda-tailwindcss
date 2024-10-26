@@ -1,7 +1,8 @@
 {{define "content"}}
     {{- if not (eq .HTMX.Request.Target "task")}}
-        <article class="message is-link">
-            <div class="message-body">
+        <article class="alert alert-info">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div>
                 <p>Submitting this form will create an <i>ExampleTask</i> in the task queue. After the specified delay, the message will be logged by the queue processor.</p>
                 <p>See pkg/tasks and the README for more information.</p>
             </div>
@@ -12,30 +13,32 @@
 {{end}}
 
 {{define "form"}}
-    <form id="task" method="post" hx-post="{{url "task.submit"}}">
+    <form id="task" method="post" hx-post="{{url "task.submit"}}" class="space-y-4">
         {{template "messages" .}}
-        <div class="field">
-            <label for="delay" class="label">Delay (in seconds)</label>
-            <div class="control">
-                <input type="number" id="delay" name="delay" class="input {{.Form.GetFieldStatusClass "Delay"}}" value="{{.Form.Delay}}"/>
-            </div>
-            <p class="help">How long to wait until the task is executed</p>
+        <div class="form-control w-full">
+            <label for="delay" class="label">
+                <span class="label-text">Delay (in seconds)</span>
+            </label>
+            <input type="number" id="delay" name="delay" class="input input-bordered w-full {{.Form.GetFieldStatusClass "Delay"}}" value="{{.Form.Delay}}"/>
+            <label class="label">
+                <span class="label-text-alt">How long to wait until the task is executed</span>
+            </label>
             {{template "field-errors" (.Form.GetFieldErrors "Delay")}}
         </div>
 
-        <div class="field">
-            <label for="message" class="label">Message</label>
-            <div class="control">
-                <textarea id="message" name="message" class="textarea {{.Form.GetFieldStatusClass "Message"}}">{{.Form.Message}}</textarea>
-            </div>
-            <p class="help">The message the task will output to the log</p>
+        <div class="form-control w-full">
+            <label for="message" class="label">
+                <span class="label-text">Message</span>
+            </label>
+            <textarea id="message" name="message" class="textarea textarea-bordered w-full {{.Form.GetFieldStatusClass "Message"}}">{{.Form.Message}}</textarea>
+            <label class="label">
+                <span class="label-text-alt">The message the task will output to the log</span>
+            </label>
             {{template "field-errors" (.Form.GetFieldErrors "Message")}}
         </div>
 
-        <div class="field is-grouped">
-            <div class="control">
-                <button class="button is-link">Add task to queue</button>
-            </div>
+        <div class="form-control mt-6 flex flex-row justify-start">
+            <button class="btn btn-primary">Add task to queue</button>
         </div>
 
         {{template "csrf" .}}

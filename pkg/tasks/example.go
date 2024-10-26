@@ -5,8 +5,8 @@ import (
 	"github.com/mikestefanello/backlite"
 	"time"
 
-	"github.com/mikestefanello/pagoda/pkg/log"
-	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/log"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
 )
 
 // ExampleTask is an example implementation of backlite.Task

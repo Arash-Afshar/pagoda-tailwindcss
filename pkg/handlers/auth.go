@@ -6,17 +6,17 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/mikestefanello/pagoda/ent"
-	"github.com/mikestefanello/pagoda/ent/user"
-	"github.com/mikestefanello/pagoda/pkg/context"
-	"github.com/mikestefanello/pagoda/pkg/form"
-	"github.com/mikestefanello/pagoda/pkg/log"
-	"github.com/mikestefanello/pagoda/pkg/middleware"
-	"github.com/mikestefanello/pagoda/pkg/msg"
-	"github.com/mikestefanello/pagoda/pkg/page"
-	"github.com/mikestefanello/pagoda/pkg/redirect"
-	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/templates"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/context"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/form"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/log"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/middleware"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/msg"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/page"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/redirect"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/templates"
 )
 
 const (

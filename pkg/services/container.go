@@ -12,13 +12,13 @@ import (
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/labstack/echo/v4"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/mikestefanello/pagoda/config"
-	"github.com/mikestefanello/pagoda/ent"
-	"github.com/mikestefanello/pagoda/pkg/funcmap"
-	"github.com/mikestefanello/pagoda/pkg/log"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/funcmap"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/log"
 
 	// Require by ent
-	_ "github.com/mikestefanello/pagoda/ent/runtime"
+	_ "github.com/Arash-Afshar/pagoda-tailwindcss/ent/runtime"
 )
 
 // Container contains all services used by the application and provides an easy way to handle dependency
