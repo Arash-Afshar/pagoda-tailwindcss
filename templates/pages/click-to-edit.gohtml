@@ -1,0 +1,34 @@
+{{define "content"}}
+{{- if (eq .Data.Mode "view")}}
+<div hx-target="this" hx-swap="outerHTML">
+    <div class="mt-4"><label class="mr-2">Name:</label>{{.Data.Name}}</div>
+    <div class="mt-2"><label class="mr-2">Email:</label> {{.Data.Email}}</div>
+    <button hx-get="{{url "click-to-edit.edit"}}" class="btn btn-primary mt-4">
+    Click To Edit
+    </button>
+</div>
+{{- else if (eq .Data.Mode "edit")}}
+<form hx-put="{{url "click-to-edit.submit"}}" hx-target="this" hx-swap="outerHTML" class="mt-4">
+    <div class="form-control">
+      <label for="name" class="label">
+        <span class="label-text">Name</span>
+      </label>
+      <input id="name" type="text" name="name"
+          class="input input-bordered {{.Form.Submission.GetFieldStatusClass " Name"}}"
+          value="{{.Form.Name}}">
+      {{template "field-errors" (.Form.Submission.GetFieldErrors "Name")}}
+    </div>
+    <div class="form-control">
+      <label for="email" class="label">
+        <span class="label-text">Email Address</span>
+      </label>
+      <input id="email" type="email" name="email"
+          class="input input-bordered {{.Form.Submission.GetFieldStatusClass " Email"}}"
+          value="{{.Form.Email}}">
+      {{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
+    </div>
+    <button class="btn btn-primary mt-4">Submit</button>
+    <button class="btn btn-secondary" hx-get="{{url "click-to-edit.main"}}">Cancel</button>
+  </form>
+{{- end}}
+{{end}}
