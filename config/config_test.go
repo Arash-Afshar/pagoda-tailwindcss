@@ -11,8 +11,7 @@ func TestGetConfig(t *testing.T) {
 	_, err := GetConfig()
 	require.NoError(t, err)
 
-	var env environment
-	env = "abc"
+	env := environment("abc")
 	SwitchEnvironment(env)
 	cfg, err := GetConfig()
 	require.NoError(t, err)
