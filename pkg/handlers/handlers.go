@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
+	"github.com/labstack/echo/v4"
 )
 
 var handlers []Handler

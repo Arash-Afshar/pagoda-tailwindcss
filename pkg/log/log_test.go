@@ -3,8 +3,8 @@ package log
 import (
 	"testing"
 
-	"github.com/labstack/echo/v4"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
 

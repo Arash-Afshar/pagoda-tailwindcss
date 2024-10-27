@@ -75,7 +75,6 @@ func (m *MailClient) send(email *mail, ctx echo.Context) error {
 			Base(email.template).
 			Files(fmt.Sprintf("emails/%s", email.template)).
 			Execute(email.templateData)
-
 		if err != nil {
 			return err
 		}

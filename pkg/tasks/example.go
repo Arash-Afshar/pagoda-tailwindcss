@@ -2,8 +2,9 @@ package tasks
 
 import (
 	"context"
-	"github.com/mikestefanello/backlite"
 	"time"
+
+	"github.com/mikestefanello/backlite"
 
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/log"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"

@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/labstack/echo/v4"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/context"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/log"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/page"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/templates"
+	"github.com/labstack/echo/v4"
 )
 
 // cachedPageGroup stores the cache group for cached pages
@@ -138,7 +138,6 @@ func (t *TemplateRenderer) RenderPage(ctx echo.Context, page page.Page) error {
 		).
 		Directories("components").
 		Execute(page)
-
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,
@@ -218,7 +217,6 @@ func (t *TemplateRenderer) GetCachedPage(ctx echo.Context, url string) (*CachedP
 		Group(cachedPageGroup).
 		Key(url).
 		Fetch(ctx.Request().Context())
-
 	if err != nil {
 		return nil, err
 	}

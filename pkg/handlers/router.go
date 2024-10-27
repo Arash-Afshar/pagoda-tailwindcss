@@ -3,11 +3,11 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gorilla/sessions"
-	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/middleware"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
+	"github.com/gorilla/sessions"
+	echomw "github.com/labstack/echo/v4/middleware"
 )
 
 // BuildRouter builds the router

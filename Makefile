@@ -35,3 +35,13 @@ test:
 .PHONY: check-updates
 check-updates:
 	go list -u -m -f '{{if not .Indirect}}{{.}}{{end}}' all | grep "\["
+
+# Run linting
+.PHONY: lint
+lint:
+	golangci-lint run
+
+# Run linting and fix
+.PHONY: lint-fix
+lint-fix:
+	golangci-lint run --fix

@@ -31,7 +31,6 @@ func ServeCachedPage(t *services.TemplateRenderer) echo.MiddlewareFunc {
 
 			// Attempt to load from cache
 			page, err := t.GetCachedPage(ctx, ctx.Request().URL.String())
-
 			if err != nil {
 				switch {
 				case errors.Is(err, services.ErrCacheMiss):
