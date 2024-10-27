@@ -5,3 +5,8 @@ linters:
     - gofumpt
     - goimports
     - gosec
+    - govet
+    - gocyclo
+    - ineffassign
+    - misspell
+    - gosimple
