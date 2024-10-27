@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/handlers"
@@ -67,7 +68,7 @@ func main() {
 	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
-	signal.Notify(quit, os.Kill)
+	signal.Notify(quit, syscall.SIGTERM)
 	<-quit
 
 	// Shutdown both the task runner and web server
