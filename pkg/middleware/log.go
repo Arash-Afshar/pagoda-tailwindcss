@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/labstack/echo/v4"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/log"
+	"github.com/labstack/echo/v4"
 )
 
 // SetLogger initializes a logger for the current request and stores it in the context.

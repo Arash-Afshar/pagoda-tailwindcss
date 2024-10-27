@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"github.com/labstack/echo/v4"
+
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/form"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/page"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/templates"
+	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
 )
 
 const (
@@ -73,7 +74,6 @@ func (h *Contact) Submit(ctx echo.Context) error {
 		Subject("Contact form submitted").
 		Body(fmt.Sprintf("The message is: %s", input.Message)).
 		Send(ctx)
-
 	if err != nil {
 		return fail(err, "unable to send email")
 	}

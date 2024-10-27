@@ -6,16 +6,14 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
 	"github.com/Masterminds/sprig"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/random"
-	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
 )
 
-var (
-	// CacheBuster stores a random string used as a cache buster for static files.
-	CacheBuster = random.String(10)
-)
+// CacheBuster stores a random string used as a cache buster for static files.
+var CacheBuster = random.String(10)
 
 type funcMap struct {
 	web *echo.Echo

@@ -3,9 +3,9 @@ package middleware
 import (
 	"testing"
 
-	"github.com/gorilla/sessions"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/session"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
+	"github.com/gorilla/sessions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

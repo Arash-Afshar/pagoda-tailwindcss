@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/labstack/echo/v4"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/htmx"
+	"github.com/labstack/echo/v4"
 )
 
 // Redirect is a helper to perform HTTP redirects.

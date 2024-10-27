@@ -1,0 +1,7 @@
+linters:
+  disable-all: true
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+    - gosec

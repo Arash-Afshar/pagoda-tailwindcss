@@ -7,12 +7,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/labstack/echo/v4"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/htmx"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/page"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/templates"
+	"github.com/labstack/echo/v4"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

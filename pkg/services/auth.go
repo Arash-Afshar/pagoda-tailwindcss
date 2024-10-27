@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang-jwt/jwt"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/context"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/session"
+	"github.com/golang-jwt/jwt"
 
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -220,7 +220,6 @@ func (c *AuthClient) ValidateEmailVerificationToken(token string) (string, error
 
 		return []byte(c.config.App.EncryptionKey), nil
 	})
-
 	if err != nil {
 		return "", err
 	}

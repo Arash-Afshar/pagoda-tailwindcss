@@ -5,9 +5,9 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/labstack/echo/v4"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/htmx"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

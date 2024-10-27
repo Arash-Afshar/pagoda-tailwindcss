@@ -49,6 +49,7 @@ func main() {
 
 			srv.TLSConfig = &tls.Config{
 				Certificates: []tls.Certificate{certs},
+				MinVersion:   tls.VersionTLS12,
 			}
 		}
 

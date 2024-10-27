@@ -4,18 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/mikestefanello/backlite"
 	"log/slog"
 	"os"
 	"strings"
 
+	"github.com/mikestefanello/backlite"
+
 	entsql "entgo.io/ent/dialect/sql"
-	"github.com/labstack/echo/v4"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/funcmap"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/log"
+	"github.com/labstack/echo/v4"
+	_ "github.com/mattn/go-sqlite3"
 
 	// Require by ent
 	_ "github.com/Arash-Afshar/pagoda-tailwindcss/ent/runtime"
@@ -185,7 +186,6 @@ func (c *Container) initTasks() {
 		ReleaseAfter:    c.Config.Tasks.ReleaseAfter,
 		CleanupInterval: c.Config.Tasks.CleanupInterval,
 	})
-
 	if err != nil {
 		panic(fmt.Sprintf("failed to create task client: %v", err))
 	}
@@ -205,7 +205,7 @@ func openDB(driver, connection string) (*sql.DB, error) {
 		if len(d) > 1 {
 			path := strings.Join(d[:len(d)-1], "/")
 
-			if err := os.MkdirAll(path, 0755); err != nil {
+			if err := os.MkdirAll(path, 0o755); err != nil {
 				return nil, err
 			}
 		}

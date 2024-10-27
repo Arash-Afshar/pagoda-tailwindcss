@@ -5,10 +5,10 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/labstack/echo/v4"
-	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/log"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
+	"github.com/labstack/echo/v4"
+	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"

@@ -104,5 +104,4 @@ func (h *ClickToEdit) Submit(ctx echo.Context) error {
 	default:
 		return err
 	}
-
 }

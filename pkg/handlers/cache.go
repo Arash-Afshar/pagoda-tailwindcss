@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"errors"
-	"github.com/labstack/echo/v4"
+	"time"
+
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/form"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/page"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/templates"
-	"time"
+	"github.com/labstack/echo/v4"
 )
 
 const (
@@ -81,7 +82,6 @@ func (h *Cache) Submit(ctx echo.Context) error {
 		Data(input.Value).
 		Expiration(30 * time.Minute).
 		Save(ctx.Request().Context())
-
 	if err != nil {
 		return fail(err, "unable to set cache")
 	}

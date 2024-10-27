@@ -1,10 +1,10 @@
 package middleware
 
 import (
+	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/session"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
-	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/session"
 )
 
 // Session sets the session storage in the request context

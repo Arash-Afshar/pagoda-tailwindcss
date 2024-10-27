@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/labstack/echo/v4"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/context"
@@ -17,6 +15,8 @@ import (
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/redirect"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/templates"
+	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
 )
 
 const (
@@ -159,7 +159,6 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 		Subject("Reset your password").
 		Body(fmt.Sprintf("Go here to reset your password: %s", url)).
 		Send(ctx)
-
 	if err != nil {
 		return fail(err, "error sending password reset email")
 	}
@@ -335,7 +334,6 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 		Subject("Confirm your email address").
 		Body(fmt.Sprintf("Click here to confirm your email address: %s", url)).
 		Send(ctx)
-
 	if err != nil {
 		log.Ctx(ctx).Error("unable to send email verification link",
 			"user_id", usr.ID,
@@ -384,7 +382,6 @@ func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 		Update().
 		SetPassword(hash).
 		Save(ctx.Request().Context())
-
 	if err != nil {
 		return fail(err, "unable to update password")
 	}
@@ -429,7 +426,6 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 			Query().
 			Where(user.Email(email)).
 			Only(ctx.Request().Context())
-
 		if err != nil {
 			return fail(err, "query failed loading email verification token user")
 		}
@@ -441,7 +437,6 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 			Update().
 			SetVerified(true).
 			Save(ctx.Request().Context())
-
 		if err != nil {
 			return fail(err, "failed to set user as verified")
 		}

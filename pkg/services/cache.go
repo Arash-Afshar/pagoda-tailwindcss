@@ -220,7 +220,6 @@ func newInMemoryCache(capacity int) (CacheStore, error) {
 			s.tagIndex.purgeKeys(key)
 		}).
 		Build()
-
 	if err != nil {
 		return nil, err
 	}
