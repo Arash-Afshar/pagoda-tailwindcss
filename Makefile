@@ -6,6 +6,7 @@ setup:
 	npm install
 	go install github.com/air-verse/air@latest
 	go get entgo.io/ent/cmd/ent
+	echo "Install kamal from https://kamal-deploy.org/docs/installation/"
 
 # Generate Ent code
 .PHONY: ent-gen
@@ -45,3 +46,18 @@ lint:
 .PHONY: lint-fix
 lint-fix:
 	golangci-lint run --fix
+
+# Run kamal init: Run once to initialize the config
+.PHONY: kamal-init
+kamal-init:
+	kamal init
+
+# Run kamal setup: Run once to setup the deploy server
+.PHONY: kamal-setup
+kamal-setup:
+	kamal setup
+
+# Run kamal deploy: Run subsequent times to deploy the app
+.PHONY: kamal-deploy
+kamal-deploy:
+	kamal deploy
