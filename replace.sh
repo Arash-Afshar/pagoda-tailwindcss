@@ -10,7 +10,7 @@ ORG=$1
 REPO=$2
 APP_NAME=$3
 
-# rm -rf .git
+rm -rf .git
 
 sed -i "s/Arash-Afshar\/pagoda-tailwindcss/$1\/$2/g" */*/*.go
 sed -i "s/Arash-Afshar\/pagoda-tailwindcss/$1\/$2/g" */*.go
