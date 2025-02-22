@@ -1,8 +1,16 @@
 #! /bin/bash
+set -e
+
+if [ "$#" -ne 3 ]; then
+  echo "usage: ./replace.sh <github_org> <github_repo> <app_name>"
+  exit 1
+fi
 
 ORG=$1
 REPO=$2
 APP_NAME=$3
+
+# rm -rf .git
 
 sed -i "s/Arash-Afshar\/pagoda-tailwindcss/$1\/$2/g" */*/*.go
 sed -i "s/Arash-Afshar\/pagoda-tailwindcss/$1\/$2/g" */*.go
