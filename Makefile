@@ -31,6 +31,11 @@ dev-css:
 test:
 	go test -count=1 -p 1 ./...
 
+.PHONY: build
+build: setup
+	npx tailwindcss -i tailwind-styles.css -o static/styles.css --postcss
+	go build -o pagoda cmd/web/main.go
+
 # Check for direct dependency updates
 .PHONY: check-updates
 check-updates:
@@ -45,3 +50,26 @@ lint:
 .PHONY: lint-fix
 lint-fix:
 	golangci-lint run --fix
+
+.PHONY: image
+image:
+	docker build -t CONTAINER_REGISTRY_USERNAME/IMAGE_NAME .
+
+.PHONY: shell
+shell:
+	docker run -v $(PWD):/app -it CONTAINER_REGISTRY_USERNAME/IMAGE_NAME bash
+
+.PHONY: deploy
+deploy:
+	echo "Override the following environment variables"
+	echo "  - KAMAL_REGISTRY_PASSWORD=<your-docker-hub-password>"
+	echo "  - PAGODA_HTTP_HOSTNAME=0.0.0.0"
+	echo "  - PAGODA_APP_ENVIRONMENT=prod"
+	echo "  - PAGODA_APP_ENCRYPTIONKEY=<new-encryption-key>"
+	echo "  - PAGODA_MAIL_HOSTNAME=<your-mail-hostname>"
+	echo "  - PAGODA_MAIL_USER=<your-mail-user>"
+	echo "  - PAGODA_MAIL_PASSWORD=<your-mail-password>"
+	echo "  - PAGODA_MAIL_FROMADDRESS=<your-mail-from-address>"
+	echo "Next, run these commands"
+	echo "  - rvm use 3.4.2"
+	echo "  - kamal deploy"

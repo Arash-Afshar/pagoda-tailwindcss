@@ -23,3 +23,7 @@ sed -i "s/PAGODA/${APP_NAME^^}/g" README.md
 sed -i "s/pagoda/${APP_NAME,,}/g" README.md
 sed -i "s/Pagoda/${APP_NAME}/g" README.md
 sed -i "s/pagoda-tailwindcss/${APP_NAME,,}/g" package-lock.json
+sed -i "s/pagoda/${APP_NAME,,}/g" Makefile
+sed -i "s/PAGODA/${APP_NAME^^}/g" Makefile
+sed -i "s/pagoda/${APP_NAME,,}/g" Dockerfile
+sed -i "s/pagoda/${APP_NAME,,}/g" config/deploy.yml
