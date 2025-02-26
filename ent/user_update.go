@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/predicate"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
@@ -84,6 +85,35 @@ func (uu *UserUpdate) SetNillableVerified(b *bool) *UserUpdate {
 	return uu
 }
 
+// SetRole sets the "role" field.
+func (uu *UserUpdate) SetRole(u user.Role) *UserUpdate {
+	uu.mutation.SetRole(u)
+	return uu
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableRole(u *user.Role) *UserUpdate {
+	if u != nil {
+		uu.SetRole(*u)
+	}
+	return uu
+}
+
+// AddModelNameIDs adds the "ModelNames" edge to the ModelName entity by IDs.
+func (uu *UserUpdate) AddModelNameIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddModelNameIDs(ids...)
+	return uu
+}
+
+// AddModelNames adds the "ModelNames" edges to the ModelName entity.
+func (uu *UserUpdate) AddModelNames(m ...*ModelName) *UserUpdate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return uu.AddModelNameIDs(ids...)
+}
+
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by IDs.
 func (uu *UserUpdate) AddOwnerIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddOwnerIDs(ids...)
@@ -102,6 +132,27 @@ func (uu *UserUpdate) AddOwner(p ...*PasswordToken) *UserUpdate {
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
+}
+
+// ClearModelNames clears all "ModelNames" edges to the ModelName entity.
+func (uu *UserUpdate) ClearModelNames() *UserUpdate {
+	uu.mutation.ClearModelNames()
+	return uu
+}
+
+// RemoveModelNameIDs removes the "ModelNames" edge to ModelName entities by IDs.
+func (uu *UserUpdate) RemoveModelNameIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveModelNameIDs(ids...)
+	return uu
+}
+
+// RemoveModelNames removes "ModelNames" edges to ModelName entities.
+func (uu *UserUpdate) RemoveModelNames(m ...*ModelName) *UserUpdate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return uu.RemoveModelNameIDs(ids...)
 }
 
 // ClearOwner clears all "owner" edges to the PasswordToken entity.
@@ -169,6 +220,11 @@ func (uu *UserUpdate) check() error {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
 	}
+	if v, ok := uu.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -195,6 +251,54 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.Verified(); ok {
 		_spec.SetField(user.FieldVerified, field.TypeBool, value)
+	}
+	if value, ok := uu.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if uu.mutation.ModelNamesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ModelNamesTable,
+			Columns: []string{user.ModelNamesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelname.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedModelNamesIDs(); len(nodes) > 0 && !uu.mutation.ModelNamesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ModelNamesTable,
+			Columns: []string{user.ModelNamesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelname.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.ModelNamesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ModelNamesTable,
+			Columns: []string{user.ModelNamesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelname.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if uu.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -317,6 +421,35 @@ func (uuo *UserUpdateOne) SetNillableVerified(b *bool) *UserUpdateOne {
 	return uuo
 }
 
+// SetRole sets the "role" field.
+func (uuo *UserUpdateOne) SetRole(u user.Role) *UserUpdateOne {
+	uuo.mutation.SetRole(u)
+	return uuo
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableRole(u *user.Role) *UserUpdateOne {
+	if u != nil {
+		uuo.SetRole(*u)
+	}
+	return uuo
+}
+
+// AddModelNameIDs adds the "ModelNames" edge to the ModelName entity by IDs.
+func (uuo *UserUpdateOne) AddModelNameIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddModelNameIDs(ids...)
+	return uuo
+}
+
+// AddModelNames adds the "ModelNames" edges to the ModelName entity.
+func (uuo *UserUpdateOne) AddModelNames(m ...*ModelName) *UserUpdateOne {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return uuo.AddModelNameIDs(ids...)
+}
+
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by IDs.
 func (uuo *UserUpdateOne) AddOwnerIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddOwnerIDs(ids...)
@@ -335,6 +468,27 @@ func (uuo *UserUpdateOne) AddOwner(p ...*PasswordToken) *UserUpdateOne {
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
+}
+
+// ClearModelNames clears all "ModelNames" edges to the ModelName entity.
+func (uuo *UserUpdateOne) ClearModelNames() *UserUpdateOne {
+	uuo.mutation.ClearModelNames()
+	return uuo
+}
+
+// RemoveModelNameIDs removes the "ModelNames" edge to ModelName entities by IDs.
+func (uuo *UserUpdateOne) RemoveModelNameIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveModelNameIDs(ids...)
+	return uuo
+}
+
+// RemoveModelNames removes "ModelNames" edges to ModelName entities.
+func (uuo *UserUpdateOne) RemoveModelNames(m ...*ModelName) *UserUpdateOne {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return uuo.RemoveModelNameIDs(ids...)
 }
 
 // ClearOwner clears all "owner" edges to the PasswordToken entity.
@@ -415,6 +569,11 @@ func (uuo *UserUpdateOne) check() error {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
 	}
+	if v, ok := uuo.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -458,6 +617,54 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.Verified(); ok {
 		_spec.SetField(user.FieldVerified, field.TypeBool, value)
+	}
+	if value, ok := uuo.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if uuo.mutation.ModelNamesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ModelNamesTable,
+			Columns: []string{user.ModelNamesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelname.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedModelNamesIDs(); len(nodes) > 0 && !uuo.mutation.ModelNamesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ModelNamesTable,
+			Columns: []string{user.ModelNamesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelname.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.ModelNamesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ModelNamesTable,
+			Columns: []string{user.ModelNamesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelname.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if uuo.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{

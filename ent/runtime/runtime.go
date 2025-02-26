@@ -5,6 +5,7 @@ package runtime
 import (
 	"time"
 
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/schema"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
@@ -14,6 +15,16 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	modelnameFields := schema.ModelName{}.Fields()
+	_ = modelnameFields
+	// modelnameDescFieldName is the schema descriptor for field_name field.
+	modelnameDescFieldName := modelnameFields[0].Descriptor()
+	// modelname.FieldNameValidator is a validator for the "field_name" field. It is called by the builders before save.
+	modelname.FieldNameValidator = modelnameDescFieldName.Validators[0].(func(string) error)
+	// modelnameDescCreatedAt is the schema descriptor for created_at field.
+	modelnameDescCreatedAt := modelnameFields[1].Descriptor()
+	// modelname.DefaultCreatedAt holds the default value on creation for the created_at field.
+	modelname.DefaultCreatedAt = modelnameDescCreatedAt.Default.(func() time.Time)
 	passwordtokenFields := schema.PasswordToken{}.Fields()
 	_ = passwordtokenFields
 	// passwordtokenDescHash is the schema descriptor for hash field.
@@ -45,12 +56,12 @@ func init() {
 	// user.DefaultVerified holds the default value on creation for the verified field.
 	user.DefaultVerified = userDescVerified.Default.(bool)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[4].Descriptor()
+	userDescCreatedAt := userFields[5].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 }
 
 const (
-	Version = "v0.12.5"                                         // Version of ent codegen.
-	Sum     = "h1:KREM5E4CSoej4zeGa88Ou/gfturAnpUv0mzAjch1sj4=" // Sum of ent codegen.
+	Version = "v0.14.1"                                         // Version of ent codegen.
+	Sum     = "h1:fUERL506Pqr92EPHJqr8EYxbPioflJo6PudkrEA8a/s=" // Sum of ent codegen.
 )

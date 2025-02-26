@@ -8,6 +8,27 @@ import (
 )
 
 var (
+	// ModelNamesColumns holds the columns for the "model_names" table.
+	ModelNamesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "field_name", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_model_names", Type: field.TypeInt},
+	}
+	// ModelNamesTable holds the schema information for the "model_names" table.
+	ModelNamesTable = &schema.Table{
+		Name:       "model_names",
+		Columns:    ModelNamesColumns,
+		PrimaryKey: []*schema.Column{ModelNamesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "model_names_users_ModelNames",
+				Columns:    []*schema.Column{ModelNamesColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// PasswordTokensColumns holds the columns for the "password_tokens" table.
 	PasswordTokensColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -36,6 +57,7 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "password", Type: field.TypeString},
 		{Name: "verified", Type: field.TypeBool, Default: false},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "user"}, Default: "user"},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -46,11 +68,13 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ModelNamesTable,
 		PasswordTokensTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	ModelNamesTable.ForeignKeys[0].RefTable = UsersTable
 	PasswordTokensTable.ForeignKeys[0].RefTable = UsersTable
 }

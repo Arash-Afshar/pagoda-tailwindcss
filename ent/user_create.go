@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 )
@@ -53,6 +54,20 @@ func (uc *UserCreate) SetNillableVerified(b *bool) *UserCreate {
 	return uc
 }
 
+// SetRole sets the "role" field.
+func (uc *UserCreate) SetRole(u user.Role) *UserCreate {
+	uc.mutation.SetRole(u)
+	return uc
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (uc *UserCreate) SetNillableRole(u *user.Role) *UserCreate {
+	if u != nil {
+		uc.SetRole(*u)
+	}
+	return uc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
 	uc.mutation.SetCreatedAt(t)
@@ -65,6 +80,21 @@ func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 		uc.SetCreatedAt(*t)
 	}
 	return uc
+}
+
+// AddModelNameIDs adds the "ModelNames" edge to the ModelName entity by IDs.
+func (uc *UserCreate) AddModelNameIDs(ids ...int) *UserCreate {
+	uc.mutation.AddModelNameIDs(ids...)
+	return uc
+}
+
+// AddModelNames adds the "ModelNames" edges to the ModelName entity.
+func (uc *UserCreate) AddModelNames(m ...*ModelName) *UserCreate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return uc.AddModelNameIDs(ids...)
 }
 
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by IDs.
@@ -123,6 +153,10 @@ func (uc *UserCreate) defaults() error {
 		v := user.DefaultVerified
 		uc.mutation.SetVerified(v)
 	}
+	if _, ok := uc.mutation.Role(); !ok {
+		v := user.DefaultRole
+		uc.mutation.SetRole(v)
+	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		if user.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized user.DefaultCreatedAt (forgotten import ent/runtime?)")
@@ -161,6 +195,14 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.Verified(); !ok {
 		return &ValidationError{Name: "verified", err: errors.New(`ent: missing required field "User.verified"`)}
+	}
+	if _, ok := uc.mutation.Role(); !ok {
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "User.role"`)}
+	}
+	if v, ok := uc.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
 	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -207,9 +249,29 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldVerified, field.TypeBool, value)
 		_node.Verified = value
 	}
+	if value, ok := uc.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+		_node.Role = value
+	}
 	if value, ok := uc.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := uc.mutation.ModelNamesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ModelNamesTable,
+			Columns: []string{user.ModelNamesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelname.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := uc.mutation.OwnerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

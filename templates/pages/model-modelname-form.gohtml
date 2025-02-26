@@ -1,0 +1,49 @@
+{{define "content"}}
+<div class="card bg-base-100 shadow-lg">
+    <div class="card-body">
+        <h2 class="card-title mb-4">{{if .Data.ModelName}}Edit{{else}}New{{end}} ModelName</h2>
+        <form
+            {{if .Data.ModelName}}
+            hx-put="{{url "model-modelname-submit-edit" .Data.ModelName.ID}}"
+            {{else}}
+            hx-post="{{url "model-modelname-submit-new"}}"
+            {{end}}
+            hx-target="#modelname-container"
+            hx-on::after-request="if(this.querySelector('[type=submit]').innerText === 'Update') { document.getElementById('form-container').innerHTML = ''; } else { this.reset(); this.querySelector('input[name=name]').focus(); }"
+            class="space-y-4"
+        >
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Name</span>
+                </label>
+                <input
+                    type="text"
+                    name="field_name"
+                    placeholder="Enter FieldName"
+                    value="{{.Form.FieldName}}"
+                    class="input input-bordered w-full {{.Form.Submission.GetFieldStatusClass "FieldName"}}"
+                    autofocus
+                />
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "FieldName")}}
+            </div>
+
+
+            <div class="card-actions justify-end mt-6">
+                <button
+                    type="button"
+                    class="btn btn-ghost"
+                    onclick="this.closest('.card').innerHTML = ''"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    {{if .Data.ModelName}}Update{{else}}Create{{end}}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}

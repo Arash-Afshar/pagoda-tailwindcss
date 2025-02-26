@@ -33,6 +33,11 @@ const (
 	PageSearch         Page = "search"
 	PageTask           Page = "task"
 	PageClickToEdit    Page = "click-to-edit"
+	PageDashboard      Page = "dashboard"
+	// -------- Model Pages --------
+	PageModelModelName     Page = "model-modelname"
+	PageModelModelNameList Page = "model-modelname-list"
+	PageModelModelNameForm Page = "model-modelname-form"
 )
 
 //go:embed *

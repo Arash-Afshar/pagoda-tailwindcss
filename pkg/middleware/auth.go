@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/context"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/log"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/msg"
@@ -100,6 +101,25 @@ func RequireNoAuthentication() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if u := c.Get(context.AuthenticatedUserKey); u != nil {
+				return echo.NewHTTPError(http.StatusForbidden)
+			}
+
+			return next(c)
+		}
+	}
+}
+
+// RequireAdmin requires that the user be admin in order to proceed
+func RequireAdmin() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			u := c.Get(context.AuthenticatedUserKey)
+			if u == nil {
+				return echo.NewHTTPError(http.StatusUnauthorized)
+			}
+
+			usr := u.(*ent.User)
+			if usr.Role != user.RoleAdmin {
 				return echo.NewHTTPError(http.StatusForbidden)
 			}
 

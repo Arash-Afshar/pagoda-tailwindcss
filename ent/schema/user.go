@@ -13,6 +13,13 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
+type Role string
+
+const (
+	RoleAdmin Role = "admin"
+	RoleUser  Role = "user"
+)
+
 // User holds the schema definition for the User entity.
 type User struct {
 	ent.Schema
@@ -31,6 +38,9 @@ func (User) Fields() []ent.Field {
 			NotEmpty(),
 		field.Bool("verified").
 			Default(false),
+		field.Enum("role").
+			Values(string(RoleAdmin), string(RoleUser)).
+			Default(string(RoleUser)),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -40,6 +50,7 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("ModelNames", ModelName.Type),
 		edge.From("owner", PasswordToken.Type).
 			Ref("user"),
 	}

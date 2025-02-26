@@ -25,6 +25,8 @@ type User struct {
 	Password string `json:"-"`
 	// Verified holds the value of the "verified" field.
 	Verified bool `json:"verified,omitempty"`
+	// Role holds the value of the "role" field.
+	Role user.Role `json:"role,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -35,17 +37,28 @@ type User struct {
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
+	// ModelNames holds the value of the ModelNames edge.
+	ModelNames []*ModelName `json:"ModelNames,omitempty"`
 	// Owner holds the value of the owner edge.
 	Owner []*PasswordToken `json:"owner,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// ModelNamesOrErr returns the ModelNames value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ModelNamesOrErr() ([]*ModelName, error) {
+	if e.loadedTypes[0] {
+		return e.ModelNames, nil
+	}
+	return nil, &NotLoadedError{edge: "ModelNames"}
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) OwnerOrErr() ([]*PasswordToken, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Owner, nil
 	}
 	return nil, &NotLoadedError{edge: "owner"}
@@ -60,7 +73,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldName, user.FieldEmail, user.FieldPassword:
+		case user.FieldName, user.FieldEmail, user.FieldPassword, user.FieldRole:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -109,6 +122,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Verified = value.Bool
 			}
+		case user.FieldRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field role", values[i])
+			} else if value.Valid {
+				u.Role = user.Role(value.String)
+			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -126,6 +145,11 @@ func (u *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (u *User) Value(name string) (ent.Value, error) {
 	return u.selectValues.Get(name)
+}
+
+// QueryModelNames queries the "ModelNames" edge of the User entity.
+func (u *User) QueryModelNames() *ModelNameQuery {
+	return NewUserClient(u.config).QueryModelNames(u)
 }
 
 // QueryOwner queries the "owner" edge of the User entity.
@@ -166,6 +190,9 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("verified=")
 	builder.WriteString(fmt.Sprintf("%v", u.Verified))
+	builder.WriteString(", ")
+	builder.WriteString("role=")
+	builder.WriteString(fmt.Sprintf("%v", u.Role))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))

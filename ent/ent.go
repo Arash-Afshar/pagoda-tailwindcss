@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 )
@@ -70,10 +71,11 @@ var (
 	columnCheck sql.ColumnCheck
 )
 
-// columnChecker checks if the column exists in the given table.
+// checkColumn checks if the column exists in the given table.
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			modelname.Table:     modelname.ValidColumn,
 			passwordtoken.Table: passwordtoken.ValidColumn,
 			user.Table:          user.ValidColumn,
 		})

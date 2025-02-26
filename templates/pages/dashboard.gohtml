@@ -1,0 +1,20 @@
+{{define "content"}}
+<div class="overflow-x-auto">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Route Name</th>
+        <th>Link</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{- range .Data.RouteMapMetas}}
+        <tr>
+          <td>{{.Name}}</td>
+          <td><a href="{{url .MainRouteName}}" class="link link-primary">{{.Name}}</a></td>
+        </tr>
+      {{- end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

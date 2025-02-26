@@ -3,6 +3,7 @@
 package user
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -23,12 +24,23 @@ const (
 	FieldPassword = "password"
 	// FieldVerified holds the string denoting the verified field in the database.
 	FieldVerified = "verified"
+	// FieldRole holds the string denoting the role field in the database.
+	FieldRole = "role"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeModelNames holds the string denoting the modelnames edge name in mutations.
+	EdgeModelNames = "ModelNames"
 	// EdgeOwner holds the string denoting the owner edge name in mutations.
 	EdgeOwner = "owner"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// ModelNamesTable is the table that holds the ModelNames relation/edge.
+	ModelNamesTable = "model_names"
+	// ModelNamesInverseTable is the table name for the ModelName entity.
+	// It exists in this package in order to avoid circular dependency with the "modelname" package.
+	ModelNamesInverseTable = "model_names"
+	// ModelNamesColumn is the table column denoting the ModelNames relation/edge.
+	ModelNamesColumn = "user_model_names"
 	// OwnerTable is the table that holds the owner relation/edge.
 	OwnerTable = "password_tokens"
 	// OwnerInverseTable is the table name for the PasswordToken entity.
@@ -45,6 +57,7 @@ var Columns = []string{
 	FieldEmail,
 	FieldPassword,
 	FieldVerified,
+	FieldRole,
 	FieldCreatedAt,
 }
 
@@ -77,6 +90,32 @@ var (
 	DefaultCreatedAt func() time.Time
 )
 
+// Role defines the type for the "role" enum field.
+type Role string
+
+// RoleUser is the default value of the Role enum.
+const DefaultRole = RoleUser
+
+// Role values.
+const (
+	RoleAdmin Role = "admin"
+	RoleUser  Role = "user"
+)
+
+func (r Role) String() string {
+	return string(r)
+}
+
+// RoleValidator is a validator for the "role" field enum values. It is called by the builders before save.
+func RoleValidator(r Role) error {
+	switch r {
+	case RoleAdmin, RoleUser:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for role field: %q", r)
+	}
+}
+
 // OrderOption defines the ordering options for the User queries.
 type OrderOption func(*sql.Selector)
 
@@ -105,9 +144,28 @@ func ByVerified(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldVerified, opts...).ToFunc()
 }
 
+// ByRole orders the results by the role field.
+func ByRole(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByModelNamesCount orders the results by ModelNames count.
+func ByModelNamesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newModelNamesStep(), opts...)
+	}
+}
+
+// ByModelNames orders the results by ModelNames terms.
+func ByModelNames(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newModelNamesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
 }
 
 // ByOwnerCount orders the results by owner count.
@@ -122,6 +180,13 @@ func ByOwner(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newOwnerStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newModelNamesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ModelNamesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ModelNamesTable, ModelNamesColumn),
+	)
 }
 func newOwnerStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

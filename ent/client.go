@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 )
@@ -24,6 +25,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// ModelName is the client for interacting with the ModelName builders.
+	ModelName *ModelNameClient
 	// PasswordToken is the client for interacting with the PasswordToken builders.
 	PasswordToken *PasswordTokenClient
 	// User is the client for interacting with the User builders.
@@ -39,6 +42,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.ModelName = NewModelNameClient(c.config)
 	c.PasswordToken = NewPasswordTokenClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -133,6 +137,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:           ctx,
 		config:        cfg,
+		ModelName:     NewModelNameClient(cfg),
 		PasswordToken: NewPasswordTokenClient(cfg),
 		User:          NewUserClient(cfg),
 	}, nil
@@ -154,6 +159,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:           ctx,
 		config:        cfg,
+		ModelName:     NewModelNameClient(cfg),
 		PasswordToken: NewPasswordTokenClient(cfg),
 		User:          NewUserClient(cfg),
 	}, nil
@@ -162,7 +168,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		PasswordToken.
+//		ModelName.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -184,6 +190,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.ModelName.Use(hooks...)
 	c.PasswordToken.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -191,6 +198,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.ModelName.Intercept(interceptors...)
 	c.PasswordToken.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
@@ -198,12 +206,163 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *ModelNameMutation:
+		return c.ModelName.mutate(ctx, m)
 	case *PasswordTokenMutation:
 		return c.PasswordToken.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// ModelNameClient is a client for the ModelName schema.
+type ModelNameClient struct {
+	config
+}
+
+// NewModelNameClient returns a client for the ModelName from the given config.
+func NewModelNameClient(c config) *ModelNameClient {
+	return &ModelNameClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `modelname.Hooks(f(g(h())))`.
+func (c *ModelNameClient) Use(hooks ...Hook) {
+	c.hooks.ModelName = append(c.hooks.ModelName, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `modelname.Intercept(f(g(h())))`.
+func (c *ModelNameClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ModelName = append(c.inters.ModelName, interceptors...)
+}
+
+// Create returns a builder for creating a ModelName entity.
+func (c *ModelNameClient) Create() *ModelNameCreate {
+	mutation := newModelNameMutation(c.config, OpCreate)
+	return &ModelNameCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ModelName entities.
+func (c *ModelNameClient) CreateBulk(builders ...*ModelNameCreate) *ModelNameCreateBulk {
+	return &ModelNameCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ModelNameClient) MapCreateBulk(slice any, setFunc func(*ModelNameCreate, int)) *ModelNameCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ModelNameCreateBulk{err: fmt.Errorf("calling to ModelNameClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ModelNameCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ModelNameCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ModelName.
+func (c *ModelNameClient) Update() *ModelNameUpdate {
+	mutation := newModelNameMutation(c.config, OpUpdate)
+	return &ModelNameUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ModelNameClient) UpdateOne(mn *ModelName) *ModelNameUpdateOne {
+	mutation := newModelNameMutation(c.config, OpUpdateOne, withModelName(mn))
+	return &ModelNameUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ModelNameClient) UpdateOneID(id int) *ModelNameUpdateOne {
+	mutation := newModelNameMutation(c.config, OpUpdateOne, withModelNameID(id))
+	return &ModelNameUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ModelName.
+func (c *ModelNameClient) Delete() *ModelNameDelete {
+	mutation := newModelNameMutation(c.config, OpDelete)
+	return &ModelNameDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ModelNameClient) DeleteOne(mn *ModelName) *ModelNameDeleteOne {
+	return c.DeleteOneID(mn.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ModelNameClient) DeleteOneID(id int) *ModelNameDeleteOne {
+	builder := c.Delete().Where(modelname.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ModelNameDeleteOne{builder}
+}
+
+// Query returns a query builder for ModelName.
+func (c *ModelNameClient) Query() *ModelNameQuery {
+	return &ModelNameQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeModelName},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ModelName entity by its id.
+func (c *ModelNameClient) Get(ctx context.Context, id int) (*ModelName, error) {
+	return c.Query().Where(modelname.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ModelNameClient) GetX(ctx context.Context, id int) *ModelName {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a ModelName.
+func (c *ModelNameClient) QueryUser(mn *ModelName) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := mn.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(modelname.Table, modelname.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, modelname.UserTable, modelname.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(mn.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ModelNameClient) Hooks() []Hook {
+	return c.hooks.ModelName
+}
+
+// Interceptors returns the client interceptors.
+func (c *ModelNameClient) Interceptors() []Interceptor {
+	return c.inters.ModelName
+}
+
+func (c *ModelNameClient) mutate(ctx context.Context, m *ModelNameMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ModelNameCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ModelNameUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ModelNameUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ModelNameDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ModelName mutation op: %q", m.Op())
 	}
 }
 
@@ -464,6 +623,22 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 	return obj
 }
 
+// QueryModelNames queries the ModelNames edge of a User.
+func (c *UserClient) QueryModelNames(u *User) *ModelNameQuery {
+	query := (&ModelNameClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(modelname.Table, modelname.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ModelNamesTable, user.ModelNamesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryOwner queries the owner edge of a User.
 func (c *UserClient) QueryOwner(u *User) *PasswordTokenQuery {
 	query := (&PasswordTokenClient{config: c.config}).Query()
@@ -509,9 +684,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		PasswordToken, User []ent.Hook
+		ModelName, PasswordToken, User []ent.Hook
 	}
 	inters struct {
-		PasswordToken, User []ent.Interceptor
+		ModelName, PasswordToken, User []ent.Interceptor
 	}
 )
