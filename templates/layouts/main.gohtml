@@ -6,8 +6,14 @@
         {{template "js" .}}
     </head>
     <body>
+        <!-- Navbar - Outside drawer -->
         <nav class="navbar bg-neutral text-neutral-content">
             <div class="flex-1">
+                <label for="main-drawer" class="btn btn-square btn-ghost lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </label>
                 <a href="{{url "home"}}" class="btn btn-ghost text-xl">{{.AppName}}</a>
             </div>
             <div class="flex gap-1">
@@ -52,43 +58,12 @@
             </div>
         </nav>
 
-        <div class="container mx-auto">
-            <div class="grid grid-cols-12 gap-8">
-                <div class="col-span-2">
-                    <aside hx-boost="true">
-                        <ul class="menu w-full">
-                          <li>
-                            <h2 class="menu-title">General</h2>
-                            <ul>
-                              <li>{{link (url "home") "Home" .Path}}</li>
-                              <li>{{link (url "dashboard") "Dashboard" .Path}}</li>
-                              <li>{{link (url "about") "About" .Path}}</li>
-                              <li>{{link (url "contact") "Contact" .Path}}</li>
-                              <li>{{link (url "cache") "Cache" .Path}}</li>
-                              <li>{{link (url "task") "Task" .Path}}</li>
-                              <li>{{link (url "click-to-edit.main") "Click to edit" .Path}}</li>
-                            </ul>
-                          </li>
-                        </ul>
+        <!-- Main content area with drawer -->
+        <div class="drawer lg:drawer-open">
+            <input id="main-drawer" type="checkbox" class="drawer-toggle" />
 
-                        <ul class="menu">
-                          <li>
-                            <h2 class="menu-title">Account</h2>
-                            <ul>
-                            {{- if .IsAuth}}
-                                <li>{{link (url "logout") "Logout" .Path}}</li>
-                            {{- else}}
-                                <li>{{link (url "login") "Login" .Path}}</li>
-                                <li>{{link (url "register") "Register" .Path}}</li>
-                                <li>{{link (url "forgot_password") "Forgot password" .Path}}</li>
-                            {{- end}}
-                            </ul>
-                          </li>
-                        </ul>
-                    </aside>
-                </div>
-
-                <div class="col-span-10">
+            <div class="drawer-content">
+                <div class="container mx-auto">
                     <div class="m-4 bg-base-200 p-4 rounded-box">
                         {{- if .Title}}
                             <div class="prose">
@@ -100,16 +75,51 @@
                         {{template "content" .}}
                     </div>
                 </div>
+                {{template "footer" .}}
+            </div>
+
+            <div class="drawer-side">
+                <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+                <aside class="w-64 min-h-full bg-base-200" hx-boost="true">
+                    <ul class="menu p-4 w-full">
+                        <li>
+                            <h2 class="menu-title">General</h2>
+                            <ul>
+                                <li>{{link (url "home") "Home" .Path}}</li>
+                                <li>{{link (url "dashboard") "Dashboard" .Path}}</li>
+                                <li>{{link (url "about") "About" .Path}}</li>
+                                <li>{{link (url "contact") "Contact" .Path}}</li>
+                                <li>{{link (url "cache") "Cache" .Path}}</li>
+                                <li>{{link (url "task") "Task" .Path}}</li>
+                                <li>{{link (url "click-to-edit.main") "Click to edit" .Path}}</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <ul class="menu p-4">
+                        <li>
+                            <h2 class="menu-title">Account</h2>
+                            <ul>
+                            {{- if .IsAuth}}
+                                <li>{{link (url "logout") "Logout" .Path}}</li>
+                            {{- else}}
+                                <li>{{link (url "login") "Login" .Path}}</li>
+                                <li>{{link (url "register") "Register" .Path}}</li>
+                                <li>{{link (url "forgot_password") "Forgot password" .Path}}</li>
+                            {{- end}}
+                            </ul>
+                        </li>
+                    </ul>
+                </aside>
             </div>
         </div>
 
-        {{template "footer" .}}
-<script>
-  function storeTheme(theme) {
-    localStorage.setItem('theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
-  }
-</script>
+        <script>
+            function storeTheme(theme) {
+                localStorage.setItem('theme', theme);
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+        </script>
     </body>
 </html>
 
