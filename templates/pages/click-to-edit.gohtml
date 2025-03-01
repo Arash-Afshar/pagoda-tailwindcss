@@ -14,7 +14,7 @@
         <span class="label-text">Name</span>
       </label>
       <input id="name" type="text" name="name"
-          class="input input-bordered {{.Form.Submission.GetFieldStatusClass " Name"}}"
+          class="input {{.Form.Submission.GetFieldStatusClass " Name"}}"
           value="{{.Form.Name}}">
       {{template "field-errors" (.Form.Submission.GetFieldErrors "Name")}}
     </div>
@@ -23,7 +23,7 @@
         <span class="label-text">Email Address</span>
       </label>
       <input id="email" type="email" name="email"
-          class="input input-bordered {{.Form.Submission.GetFieldStatusClass " Email"}}"
+          class="input {{.Form.Submission.GetFieldStatusClass " Email"}}"
           value="{{.Form.Email}}">
       {{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
     </div>

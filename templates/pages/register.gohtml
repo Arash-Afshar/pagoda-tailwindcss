@@ -7,7 +7,7 @@
             </div>
             <div>
                 <input id="name" type="text" name="name"
-                    class="w-full input input-bordered {{.Form.GetFieldStatusClass "Name"}}"
+                    class="w-full input {{.Form.GetFieldStatusClass "Name"}}"
                     value="{{.Form.Name}}">
                 {{template "field-errors" (.Form.GetFieldErrors "Name")}}
             </div>
@@ -19,7 +19,7 @@
             </div>
             <div>
                 <input id="email" type="email" name="email"
-                    class="w-full input input-bordered {{.Form.GetFieldStatusClass "Email"}}"
+                    class="w-full input {{.Form.GetFieldStatusClass "Email"}}"
                     value="{{.Form.Email}}">
                 {{template "field-errors" (.Form.GetFieldErrors "Email")}}
             </div>
@@ -31,7 +31,7 @@
             </div>
             <div>
                 <input id="password" type="password" name="password"
-                    class="w-full input input-bordered {{.Form.GetFieldStatusClass "Password"}}"
+                    class="w-full input {{.Form.GetFieldStatusClass "Password"}}"
                     value="{{.Form.Password}}">
                 {{template "field-errors" (.Form.GetFieldErrors "Password")}}
             </div>
@@ -43,7 +43,7 @@
             </div>
             <div>
                 <input id="password-confirm" type="password" name="password-confirm"
-                    class="w-full input input-bordered {{.Form.GetFieldStatusClass "ConfirmPassword"}}"
+                    class="w-full input {{.Form.GetFieldStatusClass "ConfirmPassword"}}"
                     value="{{.Form.ConfirmPassword}}">
                 {{template "field-errors" (.Form.GetFieldErrors "ConfirmPassword")}}
             </div>

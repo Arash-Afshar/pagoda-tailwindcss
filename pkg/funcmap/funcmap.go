@@ -55,7 +55,7 @@ func (fm *funcMap) file(filepath string) string {
 // link outputs HTML for a link element, providing the ability to dynamically set the active class
 func (fm *funcMap) link(url, text, currentPath string, classes ...string) template.HTML {
 	if currentPath == url {
-		classes = append(classes, "active")
+		classes = append(classes, "menu-active")
 	}
 
 	html := fmt.Sprintf(`<a class="%s" href="%s">%s</a>`, strings.Join(classes, " "), url, text)

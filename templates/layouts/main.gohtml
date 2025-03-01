@@ -7,53 +7,48 @@
     </head>
     <body style="min-height:100%;" >
         <nav class="navbar bg-neutral text-neutral-content">
-            <div class="container mx-auto">
-                <div class="flex-1">
-                    <a href="{{url "home"}}" class="btn btn-ghost text-xl">{{.AppName}}</a>
-                </div>
+            <div class="flex-1">
+                <a href="{{url "home"}}" class="btn btn-ghost text-xl">{{.AppName}}</a>
+            </div>
+            <div class="flex gap-1">
                 <div class="flex-none">
-                    <div class="dropdown dropdown-end">
-                        <div class="navbar-end">
-                            {{template "search" .}}
-                        </div>
-                    </div>
+                    {{template "search" .}}
                 </div>
 
-<div class="dropdown dropdown-end">
-    <div tabindex="0" role="button" class="btn btn-ghost rounded-btn">
-      Theme
-      <svg
-        width="12px"
-        height="12px"
-        class="inline-block h-2 w-2 fill-current opacity-60"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 2048 2048">
-        <path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path>
-      </svg>
-    </div>
-    <ul tabindex="0" class="dropdown-content bg-neutral text-neutral-content rounded-box z-1 w-52 p-2 shadow-2xl">
-      <li>
-        <input
-          type="radio"
-          name="theme-dropdown"
-          class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
-          aria-label="Default"
-          value="default" />
-      </li>
-      {{- range (.GetThemes)}}
-      <li>
-        <input
-          type="radio"
-          name="theme-dropdown"
-          class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
-          aria-label="{{.}}"
-          value="{{.}}"
-          hx-on:change="storeTheme('{{.}}')" />
-      </li>
-      {{- end}}
-    </ul>
-</div>
-
+                <div class="dropdown">
+                    <div tabindex="0" role="button" class="btn btn-ghost rounded-btn">
+                      Theme
+                      <svg
+                        width="12px"
+                        height="12px"
+                        class="inline-block h-2 w-2 fill-current opacity-60"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 2048 2048">
+                        <path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path>
+                      </svg>
+                    </div>
+                    <ul tabindex="0" class="dropdown-content menu bg-neutral text-neutral-content rounded-box z-1 w-52 p-2 shadow-2xl">
+                      <li>
+                        <input
+                          type="radio"
+                          name="theme-dropdown"
+                          class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
+                          aria-label="Default"
+                          value="default" />
+                      </li>
+                      {{- range (.GetThemes)}}
+                      <li>
+                        <input
+                          type="radio"
+                          name="theme-dropdown"
+                          class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
+                          aria-label="{{.}}"
+                          value="{{.}}"
+                          hx-on:change="storeTheme('{{.}}')" />
+                      </li>
+                      {{- end}}
+                    </ul>
+                </div>
             </div>
         </nav>
 
@@ -61,7 +56,7 @@
             <div class="grid grid-cols-12 gap-8">
                 <div class="col-span-2">
                     <aside hx-boost="true">
-                        <ul class="menu">
+                        <ul class="menu w-full">
                           <li>
                             <h2 class="menu-title">General</h2>
                             <ul>
@@ -119,30 +114,28 @@
 </html>
 
 {{define "search"}}
-    <div x-data="{}">
-        <input class="input" type="search" placeholder="Search..." @click="search_modal.showModal(); $nextTick(() => $refs.input.focus());"/>
-        <dialog id="search_modal" class="modal">
-            <div class="modal-box">
-                <div class="prose">
-                    <h2>Search</h2>
-                    <p>
-                        <input
-                            hx-get="{{url "search"}}"
-                            hx-trigger="keyup changed delay:500ms"
-                            hx-target="#results"
-                            name="query"
-                            class="input w-full"
-                            type="search"
-                            placeholder="Search..."
-                            x-ref="input"
-                        />
-                    </p>
-                    <ul id="results"></ul>
-                </div>
+    <input class="input" type="search" placeholder="Search..." onclick="search_modal.showModal(); $nextTick(() => $refs.input.focus());"/>
+    <dialog id="search_modal" class="modal">
+        <div class="modal-box">
+            <div class="prose">
+                <h2>Search</h2>
+                <p>
+                    <input
+                        hx-get="{{url "search"}}"
+                        hx-trigger="keyup changed delay:500ms"
+                        hx-target="#results"
+                        name="query"
+                        class="input w-full"
+                        type="search"
+                        placeholder="Search..."
+                        x-ref="input"
+                    />
+                </p>
+                <ul id="results"></ul>
             </div>
-            <form method="dialog" class="modal-backdrop">
-                <button>close</button>
-            </form>
-        </dialog>
-    </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
 {{end}}
