@@ -32,11 +32,11 @@ func TestLink(t *testing.T) {
 	f := new(funcMap)
 
 	link := string(f.link("/abc", "Text", "/abc"))
-	expected := `<a class="active" href="/abc">Text</a>`
+	expected := `<a class="menu-active" href="/abc">Text</a>`
 	assert.Equal(t, expected, link)
 
 	link = string(f.link("/abc", "Text", "/abc", "first", "second"))
-	expected = `<a class="first second active" href="/abc">Text</a>`
+	expected = `<a class="first second menu-active" href="/abc">Text</a>`
 	assert.Equal(t, expected, link)
 
 	link = string(f.link("/abc", "Text", "/def"))
