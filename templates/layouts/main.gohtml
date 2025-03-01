@@ -16,7 +16,7 @@
                 <a href="{{url "home"}}" class="btn btn-ghost text-xl">{{.AppName}}</a>
             </div>
             <div class="flex gap-1">
-                <div class="flex-none">
+                <div class="flex-none hidden lg:block">
                     {{template "search" .}}
                 </div>
 
@@ -62,7 +62,7 @@
 
             <div class="drawer-content overflow-y-auto bg-base-100">
                 <div class="container mx-auto">
-                    <div class="bg-base-100 p-4 m-4 rounded-box">
+                    <div class="bg-base-100 p-4 lg:m-4 rounded-box">
                         {{- if .Title}}
                             <div class="prose">
                                 <h1>{{.Title}}</h1>
