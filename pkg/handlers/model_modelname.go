@@ -118,7 +118,6 @@ func (h *ModelModelName) SubmitNew(ctx echo.Context) error {
 		SetUser(ctx.Get(context.AuthenticatedUserKey).(*ent.User)).
 		SetFieldName(input.FieldName).
 		Save(ctx.Request().Context())
-
 	if err != nil {
 		return err
 	}
@@ -167,14 +166,12 @@ func (h *ModelModelName) SubmitEdit(ctx echo.Context) error {
 		return h.Edit(ctx)
 	}
 
-	_, err := h.db.ModelName.Update().
+	_, err := h.db.ModelName.UpdateOneID(params.ID).
 		Where(
-			modelname.ID(params.ID),
 			modelname.HasUserWith(user.ID(ctx.Get(context.AuthenticatedUserKey).(*ent.User).ID)),
 		).
 		SetFieldName(input.FieldName).
 		Save(ctx.Request().Context())
-
 	if err != nil {
 		return err
 	}
