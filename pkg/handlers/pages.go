@@ -101,8 +101,8 @@ func (h *Pages) About(ctx echo.Context) error {
 				Body:  template.HTML(`Drop-in, Vue-like functionality written directly in your markup. Visit <a href="https://alpinejs.dev/">alpinejs.dev</a> to learn more.`),
 			},
 			{
-				Title: "Bulma",
-				Body:  template.HTML(`Ready-to-use frontend components that you can easily combine to build responsive web interfaces with no JavaScript requirements. Visit <a href="https://bulma.io/">bulma.io</a> to learn more.`),
+				Title: "DaisyUI (Tailwind CSS)",
+				Body:  template.HTML(`Ready-to-use frontend components that you can easily combine to build responsive web interfaces with no JavaScript requirements. Visit <a href="https://daisyui.com/">daisyui.com</a> to learn more.`),
 			},
 		},
 		BackendTabs: []aboutTab{

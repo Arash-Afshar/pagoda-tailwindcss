@@ -1,17 +1,22 @@
 <!DOCTYPE html>
-<html lang="en" class="bg-base-100">
+<html lang="en" class="bg-base-100 w-full h-full min-h-screen m-0 p-0 ">
     <head>
         {{template "metatags" .}}
         {{template "css" .}}
         {{template "js" .}}
     </head>
-    <body>
+    <body class="min-h-screen flex flex-col overflow-hidden">
         <nav class="navbar bg-neutral text-neutral-content">
             <div class="flex-1">
+                <label for="main-drawer" class="btn btn-square btn-ghost lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </label>
                 <a href="{{url "home"}}" class="btn btn-ghost text-xl">{{.AppName}}</a>
             </div>
             <div class="flex gap-1">
-                <div class="flex-none">
+                <div class="flex-none hidden lg:block">
                     {{template "search" .}}
                 </div>
 
@@ -52,44 +57,12 @@
             </div>
         </nav>
 
-        <div class="container mx-auto">
-            <div class="grid grid-cols-12 gap-8">
-                <div class="col-span-2">
-                    <aside hx-boost="true">
-                        <ul class="menu w-full">
-                          <li>
-                            <h2 class="menu-title">General</h2>
-                            <ul>
-                              <li>{{link (url "home") "Home" .Path}}</li>
-                              <li>{{link (url "dashboard") "Dashboard" .Path}}</li>
-                              <li>{{link (url "about") "About" .Path}}</li>
-                              <li>{{link (url "contact") "Contact" .Path}}</li>
-                              <li>{{link (url "cache") "Cache" .Path}}</li>
-                              <li>{{link (url "task") "Task" .Path}}</li>
-                              <li>{{link (url "click-to-edit.main") "Click to edit" .Path}}</li>
-                            </ul>
-                          </li>
-                        </ul>
+        <div class="drawer lg:drawer-open flex-1 overflow-hidden">
+            <input id="main-drawer" type="checkbox" class="drawer-toggle" />
 
-                        <ul class="menu">
-                          <li>
-                            <h2 class="menu-title">Account</h2>
-                            <ul>
-                            {{- if .IsAuth}}
-                                <li>{{link (url "logout") "Logout" .Path}}</li>
-                            {{- else}}
-                                <li>{{link (url "login") "Login" .Path}}</li>
-                                <li>{{link (url "register") "Register" .Path}}</li>
-                                <li>{{link (url "forgot_password") "Forgot password" .Path}}</li>
-                            {{- end}}
-                            </ul>
-                          </li>
-                        </ul>
-                    </aside>
-                </div>
-
-                <div class="col-span-10">
-                    <div class="m-4 bg-base-200 p-4 rounded-box">
+            <div class="drawer-content overflow-y-auto bg-base-100">
+                <div class="container mx-auto">
+                    <div class="bg-base-100 p-4 lg:m-4 rounded-box">
                         {{- if .Title}}
                             <div class="prose">
                                 <h1>{{.Title}}</h1>
@@ -100,22 +73,58 @@
                         {{template "content" .}}
                     </div>
                 </div>
+                {{template "footer" .}}
+            </div>
+
+            <div class="drawer-side">
+                <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+                <aside class="w-64 bg-base-300 overflow-y-auto min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-4rem)] min-h-screen" hx-boost="true">
+                    <ul class="menu p-4 w-full">
+                        <li>
+                            <h2 class="menu-title">General</h2>
+                            <ul>
+                                <li>{{link (url "home") "Home" .Path}}</li>
+                                <li>{{link (url "dashboard") "Dashboard" .Path}}</li>
+                                <li>{{link (url "about") "About" .Path}}</li>
+                                <li>{{link (url "contact") "Contact" .Path}}</li>
+                                <li>{{link (url "cache") "Cache" .Path}}</li>
+                                <li>{{link (url "task") "Task" .Path}}</li>
+                                <li>{{link (url "click-to-edit.main") "Click to edit" .Path}}</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <ul class="menu p-4">
+                        <li>
+                            <h2 class="menu-title">Account</h2>
+                            <ul>
+                            {{- if .IsAuth}}
+                                <li>{{link (url "logout") "Logout" .Path}}</li>
+                            {{- else}}
+                                <li>{{link (url "login") "Login" .Path}}</li>
+                                <li>{{link (url "register") "Register" .Path}}</li>
+                                <li>{{link (url "forgot_password") "Forgot password" .Path}}</li>
+                            {{- end}}
+                            </ul>
+                        </li>
+                    </ul>
+                </aside>
             </div>
         </div>
 
-        {{template "footer" .}}
-<script>
-  function storeTheme(theme) {
-    localStorage.setItem('theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
-  }
-</script>
+        <script>
+            function storeTheme(theme) {
+                localStorage.setItem('theme', theme);
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+        </script>
     </body>
 </html>
 
 {{define "search"}}
-    <input class="input" type="search" placeholder="Search..." onclick="search_modal.showModal(); $nextTick(() => $refs.input.focus());"/>
-    <dialog id="search_modal" class="modal w-full">
+<div x-data="{}">
+    <input class="input" type="search" placeholder="Search..." onclick="search_modal.showModal()"/>
+    <dialog id="search_modal" class="modal w-full" x-data>
         <div class="modal-box">
             <div class="prose">
                 <h2>Search</h2>
@@ -129,6 +138,7 @@
                         type="search"
                         placeholder="Search..."
                         x-ref="input"
+                        @dialog-shown.window="$nextTick(() => $refs.input.focus())"
                     />
                 </p>
                 <ul id="results"></ul>
@@ -138,4 +148,5 @@
             <button>close</button>
         </form>
     </dialog>
+</div>
 {{end}}
