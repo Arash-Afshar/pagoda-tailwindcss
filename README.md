@@ -96,8 +96,15 @@
 This a modified version of the [Pagoda](https://github.com/mikestefanello/pagoda) project. The main reason for this change is to use tailwindcss instead of bulma and to add extra sample behaviours such as theme change, etc.
 
 Run the following to customize the content to your names.
+
+```bash
+./scripts/replace.sh <GIT_ORG_NAME> <GIT_REPO_NAME> <APP_NAME>
 ```
-bash replace.sh <GIT_ORG_NAME> <GIT_REPO_NAME> <APP_NAME>
+
+To add a new model and a template dashboard, run the following command:
+
+```bash
+./scripts/new-model.sh <MODEL_NAME>
 ```
 
 ### Overview
@@ -1120,7 +1127,7 @@ The provided implementation uses the relatively new [log/slog](https://go.dev/bl
 
 ### Context
 
-The simple `pkg/log` package provides the ability to set and get a logger from the Echo context. This is especially useful when you use the provided logger middleware (see below). If you intend to use a different logger, modify these methods to receive and return the logger of your choice. 
+The simple `pkg/log` package provides the ability to set and get a logger from the Echo context. This is especially useful when you use the provided logger middleware (see below). If you intend to use a different logger, modify these methods to receive and return the logger of your choice.
 
 ### Usage
 
