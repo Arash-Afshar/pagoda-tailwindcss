@@ -5,7 +5,7 @@
         {{template "css" .}}
         {{template "js" .}}
     </head>
-    <body style="min-height:100%;" >
+    <body>
         <nav class="navbar bg-neutral text-neutral-content">
             <div class="flex-1">
                 <a href="{{url "home"}}" class="btn btn-ghost text-xl">{{.AppName}}</a>
@@ -115,7 +115,7 @@
 
 {{define "search"}}
     <input class="input" type="search" placeholder="Search..." onclick="search_modal.showModal(); $nextTick(() => $refs.input.focus());"/>
-    <dialog id="search_modal" class="modal">
+    <dialog id="search_modal" class="modal w-full">
         <div class="modal-box">
             <div class="prose">
                 <h2>Search</h2>
