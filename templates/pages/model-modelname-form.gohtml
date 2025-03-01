@@ -21,7 +21,7 @@
                     name="field_name"
                     placeholder="Enter FieldName"
                     value="{{.Form.FieldName}}"
-                    class="input input-bordered w-full {{.Form.Submission.GetFieldStatusClass "FieldName"}}"
+                    class="input w-full {{.Form.Submission.GetFieldStatusClass "FieldName"}}"
                     autofocus
                 />
                 {{template "field-errors" (.Form.Submission.GetFieldErrors "FieldName")}}

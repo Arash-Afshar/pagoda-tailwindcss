@@ -1,6 +1,6 @@
 .PHONY: setup
 setup:
-	npm install -D tailwindcss
+	npm install tailwindcss @tailwindcss/cli
 	npm install -D @tailwindcss/typography
 	npm i -D daisyui@latest
 	npm install
@@ -24,7 +24,7 @@ dev:
 
 .PHONY: dev-css
 dev-css:
-	npx tailwindcss -i tailwind-styles.css -o static/styles.css --postcss --watch
+	npx tailwindcss -i input.css -o static/styles.css --watch
 
 # Run all tests
 .PHONY: test
@@ -33,7 +33,7 @@ test:
 
 .PHONY: build
 build: setup
-	npx tailwindcss -i tailwind-styles.css -o static/styles.css --postcss
+	npx tailwindcss -i input.css -o static/styles.css
 	go build -o pagoda cmd/web/main.go
 
 # Check for direct dependency updates
