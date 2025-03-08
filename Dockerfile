@@ -3,7 +3,8 @@ FROM golang:latest
 RUN apt-get update
 RUN apt-get install -y \
     nodejs \
-    npm
+    npm \
+    sqlite3
 
 RUN mkdir -p /app
 WORKDIR /app
