@@ -59,6 +59,7 @@ type (
 		Database DatabaseConfig
 		Tasks    TasksConfig
 		Mail     MailConfig
+		Stripe   StripeConfig
 	}
 
 	// HTTPConfig stores HTTP configuration
@@ -88,9 +89,24 @@ type (
 		EmailVerificationTokenExpiration time.Duration
 	}
 
+	// CacheConfigRedis stores the cache configuration for the redis cache
+	CacheConfigRedis struct {
+		Hostname     string
+		Port         int
+		Password     string
+		Database     int
+		TestDatabase int
+	}
+
+	// CacheConfigOtter stores the cache configuration for the otter cache
+	CacheConfigOtter struct {
+		Capacity int
+	}
+
 	// CacheConfig stores the cache configuration
 	CacheConfig struct {
-		Capacity   int
+		Redis      CacheConfigRedis
+		Otter      CacheConfigOtter
 		Expiration struct {
 			StaticFile time.Duration
 			Page       time.Duration
@@ -109,6 +125,13 @@ type (
 		Goroutines      int
 		ReleaseAfter    time.Duration
 		CleanupInterval time.Duration
+	}
+
+	// MailConfig stores the stripe configuration
+	StripeConfig struct {
+		URL           string
+		Key           string
+		WebhookSecret string
 	}
 
 	// MailConfig stores the mail configuration

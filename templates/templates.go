@@ -34,6 +34,9 @@ const (
 	PageTask           Page = "task"
 	PageClickToEdit    Page = "click-to-edit"
 	PageDashboard      Page = "dashboard"
+	PageStripe         Page = "stripe"
+	PageStripeSuccess  Page = "stripe-success"
+	PageStripeCancel   Page = "stripe-cancel"
 	// -------- Model Pages --------
 	PageModelModelName     Page = "model-modelname"
 	PageModelModelNameList Page = "model-modelname-list"

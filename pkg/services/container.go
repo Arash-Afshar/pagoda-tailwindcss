@@ -43,6 +43,9 @@ type Container struct {
 	// ORM stores a client to the ORM
 	ORM *ent.Client
 
+	// Stripe stores a client to the Stripe API
+	Stripe *StripeClient
+
 	// Mail stores an email sending client
 	Mail *MailClient
 
@@ -69,6 +72,7 @@ func NewContainer() *Container {
 	c.initTemplateRenderer()
 	c.initMail()
 	c.initTasks()
+	c.initStripe()
 	return c
 }
 
@@ -117,12 +121,20 @@ func (c *Container) initWeb() {
 
 // initCache initializes the cache
 func (c *Container) initCache() {
-	store, err := newInMemoryCache(c.Config.Cache.Capacity)
+	store, err := newRedisCache(c.Config)
 	if err != nil {
 		panic(err)
 	}
 
 	c.Cache = NewCacheClient(store)
+
+	// TODO: based on the config, either use in-memory or redis cache
+	_, err = newInMemoryCache(c.Config.Cache.Otter.Capacity)
+	if err != nil {
+		panic(err)
+	}
+
+	// c.Cache = NewCacheClient(store)
 }
 
 // initDatabase initializes the database
@@ -163,6 +175,11 @@ func (c *Container) initAuth() {
 // initTemplateRenderer initializes the template renderer
 func (c *Container) initTemplateRenderer() {
 	c.TemplateRenderer = NewTemplateRenderer(c.Config, c.Cache, funcmap.NewFuncMap(c.Web))
+}
+
+// initWeb initializes the web framework
+func (c *Container) initStripe() {
+	c.Stripe = NewStripeClient(c.Config.Stripe.Key, c.Config.Stripe.URL, c.Config.Stripe.WebhookSecret)
 }
 
 // initMail initialize the mail client

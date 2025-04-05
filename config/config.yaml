@@ -21,7 +21,15 @@ app:
   emailVerificationTokenExpiration: "12h"
 
 cache:
-  capacity: 100000
+  redis:
+    hostname: "localhost"
+    port: 6379
+    password: ""
+    database: 0
+    testDatabase: 1
+  otter:
+    capacity: 100000
+
   expiration:
     staticFile: "4380h"
     page: "24h"
@@ -35,6 +43,11 @@ tasks:
   goroutines: 1
   releaseAfter: "15m"
   cleanupInterval: "1h"
+
+stripe:
+  url: "https://api.stripe.com"
+  key: "change-me"
+  webhookSecret: "change-me"
 
 mail:
   hostname: "localhost"

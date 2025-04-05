@@ -1,4 +1,4 @@
-package stripe
+package services
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
-	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/tests"
 	"github.com/stretchr/testify/require"
 )
@@ -20,13 +19,13 @@ func TestCheckoutSession(t *testing.T) {
 	cancelUrl := "/cancel"
 	webhookSecret := "whsec_12345"
 
-	client := NewStripeClient(testKey, url, successUrl, cancelUrl, webhookSecret)
+	client := NewStripeClient(testKey, url, webhookSecret)
 
 	// Set the environment to test
 	config.SwitchEnvironment(config.EnvTest)
 
 	// Create a new container
-	c := services.NewContainer()
+	c := NewContainer()
 
 	// Create a web context
 	ctx, _ := tests.NewContext(c.Web, "/")
@@ -41,7 +40,7 @@ func TestCheckoutSession(t *testing.T) {
 	require.NoError(t, err)
 	fmt.Println(customer)
 
-	session, err := client.CheckoutSession(context.Background(), customer.ID, "")
+	session, err := client.CheckoutSession(context.Background(), successUrl, cancelUrl, customer.ID, "price_123", 1)
 	require.NoError(t, err)
 	fmt.Println(session)
 }

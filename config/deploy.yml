@@ -77,8 +77,8 @@ asset_path: /app/static
 #   wait: 2
 
 # Use accessory services (secrets come from .kamal/secrets).
-#
-# accessories:
+
+accessories:
 #   db:
 #     image: mysql:8.0
 #     host: 192.168.0.2
@@ -93,9 +93,10 @@ asset_path: /app/static
 #       - db/production.sql:/docker-entrypoint-initdb.d/setup.sql
 #     directories:
 #       - data:/var/lib/mysql
-#   redis:
-#     image: valkey/valkey:8
-#     host: 192.168.0.2
-#     port: 6379
-#     directories:
-#       - data:/data
+ redis:
+  image: "redis:alpine"
+  ports:
+    - "127.0.0.1:6379:6379"
+  directories:
+    - redis-data:/data
+  command: redis-server --appendonly yes

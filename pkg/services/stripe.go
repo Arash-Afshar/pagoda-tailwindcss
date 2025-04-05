@@ -1,4 +1,4 @@
-package stripe
+package services
 
 import (
 	"context"
@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
-	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/services"
 	stripe "github.com/stripe/stripe-go/v81"
 	"github.com/stripe/stripe-go/v81/client"
 	"github.com/stripe/stripe-go/v81/webhook"
@@ -20,8 +19,6 @@ import (
 
 type StripeClient struct {
 	c             *client.API
-	successUrl    string
-	cancelUrl     string
 	webhookSecret string
 }
 
@@ -64,7 +61,7 @@ func kvStripeCustomerKey(customerId string) string {
 	return "stripe:customer:" + customerId
 }
 
-func NewStripeClient(key, url, successUrl, cancelUrl, webhookSecret string) *StripeClient {
+func NewStripeClient(key, url, webhookSecret string) *StripeClient {
 	config := &stripe.BackendConfig{}
 	if url != "" {
 		config.URL = stripe.String(url)
@@ -73,24 +70,24 @@ func NewStripeClient(key, url, successUrl, cancelUrl, webhookSecret string) *Str
 		API: stripe.GetBackendWithConfig(stripe.APIBackend, config),
 	}
 	c := client.New(key, backends)
-	return &StripeClient{c: c, successUrl: successUrl, cancelUrl: cancelUrl, webhookSecret: webhookSecret}
+	return &StripeClient{c: c, webhookSecret: webhookSecret}
 }
 
-func (s *StripeClient) GetCustomer(ctx context.Context, cache *services.CacheClient, user *ent.User) (*stripe.Customer, error) {
-	params := &stripe.CustomerParams{
-		Email: stripe.String(user.Email),
-		Metadata: map[string]string{
-			"user_id": strconv.Itoa(user.ID),
-		},
-	}
+func (s *StripeClient) GetCustomer(ctx context.Context, cache *CacheClient, user *ent.User) (*stripe.Customer, error) {
 
 	stripeCustomerId, err := cache.Get().
 		Key(kvUserKey(user.ID)).
 		Fetch(ctx)
-	if err != nil && !errors.Is(err, services.ErrCacheMiss) {
+	if err != nil && !errors.Is(err, ErrCacheMiss) {
 		return nil, fmt.Errorf("getting stripe customer from cache: %w", err)
 	}
-	if (err != nil && errors.Is(err, services.ErrCacheMiss)) || stripeCustomerId == nil {
+	if (err != nil && errors.Is(err, ErrCacheMiss)) || stripeCustomerId == nil {
+		params := &stripe.CustomerParams{
+			Email: stripe.String(user.Email),
+			Metadata: map[string]string{
+				"user_id": strconv.Itoa(user.ID),
+			},
+		}
 		c, err := s.c.Customers.New(params)
 		if err != nil {
 			return nil, fmt.Errorf("creating stripe customer: %w", err)
@@ -107,6 +104,7 @@ func (s *StripeClient) GetCustomer(ctx context.Context, cache *services.CacheCli
 		}
 		return c, nil
 	} else {
+		params := &stripe.CustomerParams{}
 		c, err := s.c.Customers.Get(stripeCustomerId.(string), params)
 		if err != nil {
 			return nil, fmt.Errorf("getting stripe customer: %w", err)
@@ -115,11 +113,18 @@ func (s *StripeClient) GetCustomer(ctx context.Context, cache *services.CacheCli
 	}
 }
 
-func (s *StripeClient) CheckoutSession(ctx context.Context, stripeCustomerId string, otherInputsTodo string) (*stripe.CheckoutSession, error) {
+func (s *StripeClient) CheckoutSession(ctx context.Context, successUrl, cancelUrl, stripeCustomerId, priceId string, quantity int) (*stripe.CheckoutSession, error) {
 	params := &stripe.CheckoutSessionParams{
 		Customer:   stripe.String(stripeCustomerId),
-		SuccessURL: stripe.String(s.successUrl),
-		CancelURL:  stripe.String(s.cancelUrl),
+		SuccessURL: stripe.String(successUrl),
+		CancelURL:  stripe.String(cancelUrl),
+		LineItems: []*stripe.CheckoutSessionLineItemParams{
+			{
+				Price:    stripe.String(priceId),
+				Quantity: stripe.Int64(int64(quantity)),
+			},
+		},
+		Mode: stripe.String(string(stripe.CheckoutSessionModePayment)),
 	}
 	session, err := s.c.CheckoutSessions.New(params)
 	if err != nil {
@@ -128,7 +133,7 @@ func (s *StripeClient) CheckoutSession(ctx context.Context, stripeCustomerId str
 	return session, nil
 }
 
-func (s *StripeClient) SyncStripeDataToKV(ctx context.Context, cache *services.CacheClient, stripeCustomerId string) (*SubscriptionData, error) {
+func (s *StripeClient) SyncStripeDataToKV(ctx context.Context, cache *CacheClient, stripeCustomerId string) (*SubscriptionData, error) {
 	// Fetch latest subscription data from Stripe
 	subscriptions := s.c.Subscriptions.List(&stripe.SubscriptionListParams{
 		Customer: stripe.String(stripeCustomerId),
@@ -166,7 +171,7 @@ func (s *StripeClient) SyncStripeDataToKV(ctx context.Context, cache *services.C
 	return subData, nil
 }
 
-func (s *StripeClient) Success(ctx context.Context, cache *services.CacheClient, user *ent.User) error {
+func (s *StripeClient) Success(ctx context.Context, cache *CacheClient, user *ent.User) error {
 	stripeCustomerId, err := cache.Get().
 		Key(kvUserKey(user.ID)).
 		Fetch(ctx)
@@ -181,7 +186,7 @@ func (s *StripeClient) Success(ctx context.Context, cache *services.CacheClient,
 	return nil
 }
 
-func (s *StripeClient) WebhookHandler(ctx context.Context, cache *services.CacheClient) func(w http.ResponseWriter, req *http.Request) {
+func (s *StripeClient) WebhookHandler(ctx context.Context, cache *CacheClient) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		const MaxBodyBytes = int64(65536)
 		req.Body = http.MaxBytesReader(w, req.Body, MaxBodyBytes)
@@ -208,7 +213,7 @@ func (s *StripeClient) WebhookHandler(ctx context.Context, cache *services.Cache
 	}
 }
 
-func (s *StripeClient) processEvent(ctx context.Context, cache *services.CacheClient, event stripe.Event) error {
+func (s *StripeClient) processEvent(ctx context.Context, cache *CacheClient, event stripe.Event) error {
 	if !slices.Contains(allowedEvents, event.Type) {
 		return fmt.Errorf("event type %s is not allowed", event.Type)
 	}
