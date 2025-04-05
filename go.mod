@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.23.2
 
 require (
-	entgo.io/ent v0.14.3
+	entgo.io/ent v0.14.4
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/go-playground/validator/v10 v10.19.0
@@ -19,6 +19,7 @@ require (
 	github.com/mikestefanello/backlite v0.1.0
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
+	github.com/stripe/stripe-go/v81 v81.4.0
 	golang.org/x/crypto v0.33.0
 )
 
