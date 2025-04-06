@@ -12,6 +12,9 @@ import (
 	"github.com/stripe/stripe-go/v81/client"
 )
 
+// TODO: webhook and handling events
+// TODO: separate way of handling subscriptions
+
 type stripeKVData map[string]*PaymentData
 
 type StripeClient struct {
@@ -41,19 +44,6 @@ func (p *stripeKVData) UnmarshalBinary(data []byte) error {
 		return err
 	}
 	return nil
-}
-
-var allowedEvents = []stripe.EventType{
-	stripe.EventTypeCheckoutSessionCompleted,
-	stripe.EventTypeInvoicePaid,
-	stripe.EventTypeInvoicePaymentFailed,
-	stripe.EventTypeInvoicePaymentActionRequired,
-	stripe.EventTypeInvoiceUpcoming,
-	stripe.EventTypeInvoiceMarkedUncollectible,
-	stripe.EventTypeInvoicePaymentSucceeded,
-	stripe.EventTypePaymentIntentSucceeded,
-	stripe.EventTypePaymentIntentPaymentFailed,
-	stripe.EventTypePaymentIntentCanceled,
 }
 
 func kvUserKey(userId int) string {
@@ -230,47 +220,3 @@ func (s *StripeClient) Success(ctx context.Context, cache *CacheClient, userId i
 	}
 	return nil
 }
-
-// func (s *StripeClient) WebhookHandler(ctx context.Context, cache *CacheClient) func(w http.ResponseWriter, req *http.Request) {
-// 	return func(w http.ResponseWriter, req *http.Request) {
-// 		const MaxBodyBytes = int64(65536)
-// 		req.Body = http.MaxBytesReader(w, req.Body, MaxBodyBytes)
-// 		payload, err := io.ReadAll(req.Body)
-// 		if err != nil {
-// 			fmt.Fprintf(os.Stderr, "Error reading request body: %v\n", err)
-// 			w.WriteHeader(http.StatusServiceUnavailable)
-// 			return
-// 		}
-//
-// 		event, err := webhook.ConstructEvent(payload, req.Header.Get("Stripe-Signature"),
-// 			s.webhookSecret)
-// 		if err != nil {
-// 			fmt.Fprintf(os.Stderr, "Failed to parse webhook body json: %v\n", err.Error())
-// 			w.WriteHeader(http.StatusBadRequest)
-// 			return
-// 		}
-// 		if err := s.processEvent(ctx, cache, event); err != nil {
-// 			fmt.Fprintf(os.Stderr, "Error processing event: %v\n", err.Error())
-// 			w.WriteHeader(http.StatusInternalServerError)
-// 			return
-// 		}
-// 		w.WriteHeader(http.StatusOK)
-// 	}
-// }
-//
-// func (s *StripeClient) processEvent(ctx context.Context, cache *CacheClient, event stripe.Event) error {
-// 	if !slices.Contains(allowedEvents, event.Type) {
-// 		return fmt.Errorf("event type %s is not allowed", event.Type)
-// 	}
-// 	customerId := event.Data.Object["customer"].(string)
-// 	if customerId == "" {
-// 		return fmt.Errorf("customer ID not provided for event %s", event.Type)
-// 	}
-//
-// 	_, err := s.SyncStripeDataToKV(ctx, cache, customerId)
-// 	if err != nil {
-// 		return fmt.Errorf("syncing stripe data to cache: %w", err)
-// 	}
-// 	return nil
-// }
-//

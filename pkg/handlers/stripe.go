@@ -13,8 +13,41 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// TODO: payment instead of subscription
-// TODO: webhook and handling events
+// TODO: convert to db entinities:
+// - Product
+// - Price
+// ...
+type Product struct {
+	ID       int
+	StripeId string
+	Name     string
+	Prices   []Price
+}
+
+type Price struct {
+	ID       int
+	StripeId string
+	Amount   int
+	Quantity int
+	Type     string // e.g. one-time, monthly, yearly, promotion, etc.
+}
+
+var hardCodedProducts = []Product{
+	{
+		ID:       1,
+		StripeId: "prod_123",
+		Name:     "Sample product",
+		Prices: []Price{
+			{
+				ID:       1,
+				StripeId: "price_123",
+				Amount:   10,
+				Quantity: 1,
+				Type:     "one-time",
+			},
+		},
+	},
+}
 
 const (
 	routeNameStripe         = "stripe"
@@ -76,8 +109,10 @@ func (h *Stripe) Checkout(ctx echo.Context) error {
 	// TODO: figure out how to get the correct url
 	successUrl := "http://localhost:8000/stripe/success?session_id={CHECKOUT_SESSION_ID}"
 	cancelUrl := "http://localhost:8000/stripe/cancel"
-	// TODO: set the price id (dv vs prod)
-	session, err := h.Stripe.CheckoutSession(ctx.Request().Context(), successUrl, cancelUrl, customer.ID, "price_123", 1)
+	// TODO: set the price id (dev vs prod)
+	priceId := hardCodedProducts[0].Prices[0].StripeId
+	quantity := hardCodedProducts[0].Prices[0].Quantity
+	session, err := h.Stripe.CheckoutSession(ctx.Request().Context(), successUrl, cancelUrl, customer.ID, priceId, quantity)
 	if err != nil {
 		return err
 	}
@@ -100,9 +135,15 @@ func (h *Stripe) Success(ctx echo.Context) error {
 		return err
 	}
 
-	err := h.Stripe.Success(ctx.Request().Context(), h.Cache, user.ID, data.SessionID)
-	if err != nil {
-		return err
+	description := ""
+	if data.SessionID != "" {
+		err := h.Stripe.Success(ctx.Request().Context(), h.Cache, user.ID, data.SessionID)
+		if err != nil {
+			return err
+		}
+		description = "Payment successful. Existing payments:"
+	} else {
+		description = "Existing payments:"
 	}
 
 	customer, err := h.Stripe.GetCustomer(ctx.Request().Context(), h.Cache, user.ID, user.Email)
@@ -115,13 +156,16 @@ func (h *Stripe) Success(ctx echo.Context) error {
 		return err
 	}
 
-	d := paymentsData[data.SessionID]
+	all := description + "\n"
+	for _, d := range paymentsData {
+		all += d.PriceID + ":" + d.PaymentID + "\n"
+	}
 
 	p := page.New(ctx)
 	p.Layout = templates.LayoutMain
 	p.Name = templates.PageStripeSuccess
-	p.Metatags.Description = "Payment successful."
-	p.Data = d.PaymentID + ":" + d.PriceID
+	p.Metatags.Description = description
+	p.Data = all
 
 	return h.RenderPage(ctx, p)
 }
