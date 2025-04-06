@@ -13,6 +13,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// TODO: payment instead of subscription
+// TODO: webhook and handling events
+
 const (
 	routeNameStripe         = "stripe"
 	routeNameStripeCheckout = "stripe-checkout"
@@ -65,7 +68,7 @@ func (h *Stripe) Home(ctx echo.Context) error {
 func (h *Stripe) Checkout(ctx echo.Context) error {
 	user := ctx.Get(context.AuthenticatedUserKey).(*ent.User)
 
-	customer, err := h.Stripe.GetCustomer(ctx.Request().Context(), h.Cache, user)
+	customer, err := h.Stripe.GetCustomer(ctx.Request().Context(), h.Cache, user.ID, user.Email)
 	if err != nil {
 		return err
 	}
@@ -90,16 +93,35 @@ func (h *Stripe) Checkout(ctx echo.Context) error {
 }
 
 func (h *Stripe) Success(ctx echo.Context) error {
+	user := ctx.Get(context.AuthenticatedUserKey).(*ent.User)
+
 	var data stripeSuccessData
 	if err := ctx.Bind(&data); err != nil {
 		return err
 	}
 
+	err := h.Stripe.Success(ctx.Request().Context(), h.Cache, user.ID, data.SessionID)
+	if err != nil {
+		return err
+	}
+
+	customer, err := h.Stripe.GetCustomer(ctx.Request().Context(), h.Cache, user.ID, user.Email)
+	if err != nil {
+		return err
+	}
+
+	paymentsData, err := h.Stripe.GetStripeDataFromKV(ctx.Request().Context(), h.Cache, customer.ID)
+	if err != nil {
+		return err
+	}
+
+	d := paymentsData[data.SessionID]
+
 	p := page.New(ctx)
 	p.Layout = templates.LayoutMain
 	p.Name = templates.PageStripeSuccess
 	p.Metatags.Description = "Payment successful."
-	p.Data = data.SessionID
+	p.Data = d.PaymentID + ":" + d.PriceID
 
 	return h.RenderPage(ctx, p)
 }

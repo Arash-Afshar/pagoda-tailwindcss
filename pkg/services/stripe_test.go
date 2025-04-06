@@ -33,10 +33,10 @@ func TestCheckoutSession(t *testing.T) {
 
 	// Create a test user
 	var err error
-	usr, err := tests.CreateUser(c.ORM)
+	user, err := tests.CreateUser(c.ORM)
 	require.NoError(t, err)
 
-	customer, err := client.GetCustomer(context.Background(), c.Cache, usr)
+	customer, err := client.GetCustomer(context.Background(), c.Cache, user.ID, user.Email)
 	require.NoError(t, err)
 	fmt.Println(customer)
 
