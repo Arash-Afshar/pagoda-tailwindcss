@@ -7,6 +7,8 @@ import (
 
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/price"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/product"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/schema"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 )
@@ -35,6 +37,38 @@ func init() {
 	passwordtokenDescCreatedAt := passwordtokenFields[1].Descriptor()
 	// passwordtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
 	passwordtoken.DefaultCreatedAt = passwordtokenDescCreatedAt.Default.(func() time.Time)
+	priceFields := schema.Price{}.Fields()
+	_ = priceFields
+	// priceDescStripeID is the schema descriptor for stripe_id field.
+	priceDescStripeID := priceFields[0].Descriptor()
+	// price.StripeIDValidator is a validator for the "stripe_id" field. It is called by the builders before save.
+	price.StripeIDValidator = priceDescStripeID.Validators[0].(func(string) error)
+	// priceDescAmount is the schema descriptor for amount field.
+	priceDescAmount := priceFields[1].Descriptor()
+	// price.AmountValidator is a validator for the "amount" field. It is called by the builders before save.
+	price.AmountValidator = priceDescAmount.Validators[0].(func(int) error)
+	// priceDescQuantity is the schema descriptor for quantity field.
+	priceDescQuantity := priceFields[2].Descriptor()
+	// price.QuantityValidator is a validator for the "quantity" field. It is called by the builders before save.
+	price.QuantityValidator = priceDescQuantity.Validators[0].(func(int) error)
+	// priceDescCreatedAt is the schema descriptor for created_at field.
+	priceDescCreatedAt := priceFields[4].Descriptor()
+	// price.DefaultCreatedAt holds the default value on creation for the created_at field.
+	price.DefaultCreatedAt = priceDescCreatedAt.Default.(func() time.Time)
+	productFields := schema.Product{}.Fields()
+	_ = productFields
+	// productDescStripeID is the schema descriptor for stripe_id field.
+	productDescStripeID := productFields[0].Descriptor()
+	// product.StripeIDValidator is a validator for the "stripe_id" field. It is called by the builders before save.
+	product.StripeIDValidator = productDescStripeID.Validators[0].(func(string) error)
+	// productDescName is the schema descriptor for name field.
+	productDescName := productFields[1].Descriptor()
+	// product.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	product.NameValidator = productDescName.Validators[0].(func(string) error)
+	// productDescCreatedAt is the schema descriptor for created_at field.
+	productDescCreatedAt := productFields[2].Descriptor()
+	// product.DefaultCreatedAt holds the default value on creation for the created_at field.
+	product.DefaultCreatedAt = productDescCreatedAt.Default.(func() time.Time)
 	userHooks := schema.User{}.Hooks()
 	user.Hooks[0] = userHooks[0]
 	userFields := schema.User{}.Fields()

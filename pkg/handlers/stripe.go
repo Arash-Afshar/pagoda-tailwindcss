@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/product"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/context"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/middleware"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/pkg/page"
@@ -12,42 +14,6 @@ import (
 	"github.com/Arash-Afshar/pagoda-tailwindcss/templates"
 	"github.com/labstack/echo/v4"
 )
-
-// TODO: convert to db entinities:
-// - Product
-// - Price
-// ...
-type Product struct {
-	ID       int
-	StripeId string
-	Name     string
-	Prices   []Price
-}
-
-type Price struct {
-	ID       int
-	StripeId string
-	Amount   int
-	Quantity int
-	Type     string // e.g. one-time, monthly, yearly, promotion, etc.
-}
-
-var hardCodedProducts = []Product{
-	{
-		ID:       1,
-		StripeId: "prod_123",
-		Name:     "Sample product",
-		Prices: []Price{
-			{
-				ID:       1,
-				StripeId: "price_123",
-				Amount:   10,
-				Quantity: 1,
-				Type:     "one-time",
-			},
-		},
-	},
-}
 
 const (
 	routeNameStripe         = "stripe"
@@ -61,10 +27,17 @@ type (
 		*services.TemplateRenderer
 		Stripe *services.StripeClient
 		Cache  *services.CacheClient
+		db     *ent.Client
+	}
+
+	stripeSuccessParams struct {
+		SessionID string `query:"session_id"`
 	}
 
 	stripeSuccessData struct {
-		SessionID string `query:"session_id"`
+		Product   string
+		Amounts   []int
+		Quanities []int
 	}
 )
 
@@ -76,6 +49,7 @@ func (h *Stripe) Init(c *services.Container) error {
 	h.TemplateRenderer = c.TemplateRenderer
 	h.Stripe = c.Stripe
 	h.Cache = c.Cache
+	h.db = c.ORM
 	return nil
 }
 
@@ -90,18 +64,14 @@ func (h *Stripe) Home(ctx echo.Context) error {
 	p := page.New(ctx)
 	p.Layout = templates.LayoutMain
 	p.Name = templates.PageStripe
-	p.Metatags.Description = "Welcome to the homepage."
-	p.Metatags.Keywords = []string{"Go", "MVC", "Web", "Software"}
-	p.Pager = page.NewPager(ctx, 4)
-	p.Data = "Hello, World!"
 
 	return h.RenderPage(ctx, p)
 }
 
 func (h *Stripe) Checkout(ctx echo.Context) error {
-	user := ctx.Get(context.AuthenticatedUserKey).(*ent.User)
+	u := ctx.Get(context.AuthenticatedUserKey).(*ent.User)
 
-	customer, err := h.Stripe.GetCustomer(ctx.Request().Context(), h.Cache, user.ID, user.Email)
+	customer, err := h.Stripe.GetCustomer(ctx.Request().Context(), h.Cache, u.ID, u.Email)
 	if err != nil {
 		return err
 	}
@@ -109,9 +79,17 @@ func (h *Stripe) Checkout(ctx echo.Context) error {
 	// TODO: figure out how to get the correct url
 	successUrl := "http://localhost:8000/stripe/success?session_id={CHECKOUT_SESSION_ID}"
 	cancelUrl := "http://localhost:8000/stripe/cancel"
-	// TODO: set the price id (dev vs prod)
-	priceId := hardCodedProducts[0].Prices[0].StripeId
-	quantity := hardCodedProducts[0].Prices[0].Quantity
+
+	products, err := h.db.Product.
+		Query().
+		WithPrices().
+		Where(product.HasUserWith(user.ID(u.ID))).
+		All(ctx.Request().Context())
+	if err != nil {
+		return err
+	}
+	priceId := products[0].Edges.Prices[0].StripeID
+	quantity := products[0].Edges.Prices[0].Quantity
 	session, err := h.Stripe.CheckoutSession(ctx.Request().Context(), successUrl, cancelUrl, customer.ID, priceId, quantity)
 	if err != nil {
 		return err
@@ -128,25 +106,33 @@ func (h *Stripe) Checkout(ctx echo.Context) error {
 }
 
 func (h *Stripe) Success(ctx echo.Context) error {
-	user := ctx.Get(context.AuthenticatedUserKey).(*ent.User)
+	u := ctx.Get(context.AuthenticatedUserKey).(*ent.User)
 
-	var data stripeSuccessData
-	if err := ctx.Bind(&data); err != nil {
+	var params stripeSuccessParams
+	if err := ctx.Bind(&params); err != nil {
 		return err
 	}
 
-	description := ""
-	if data.SessionID != "" {
-		err := h.Stripe.Success(ctx.Request().Context(), h.Cache, user.ID, data.SessionID)
+	products, err := h.db.Product.
+		Query().
+		WithPrices().
+		Where(product.HasUserWith(user.ID(u.ID))).
+		All(ctx.Request().Context())
+	if err != nil {
+		return err
+	}
+	data := stripeSuccessData{
+		Product: products[0].Name,
+	}
+
+	if params.SessionID != "" {
+		err := h.Stripe.Success(ctx.Request().Context(), h.Cache, u.ID, params.SessionID)
 		if err != nil {
 			return err
 		}
-		description = "Payment successful. Existing payments:"
-	} else {
-		description = "Existing payments:"
 	}
 
-	customer, err := h.Stripe.GetCustomer(ctx.Request().Context(), h.Cache, user.ID, user.Email)
+	customer, err := h.Stripe.GetCustomer(ctx.Request().Context(), h.Cache, u.ID, u.Email)
 	if err != nil {
 		return err
 	}
@@ -156,16 +142,24 @@ func (h *Stripe) Success(ctx echo.Context) error {
 		return err
 	}
 
-	all := description + "\n"
 	for _, d := range paymentsData {
-		all += d.PriceID + ":" + d.PaymentID + "\n"
+		amount := 0
+		quantity := 0
+		for _, price := range products[0].Edges.Prices {
+			if price.StripeID == d.PriceID {
+				amount = price.Amount
+				quantity = price.Quantity
+				break
+			}
+		}
+		data.Amounts = append(data.Amounts, amount)
+		data.Quanities = append(data.Quanities, quantity)
 	}
 
 	p := page.New(ctx)
 	p.Layout = templates.LayoutMain
 	p.Name = templates.PageStripeSuccess
-	p.Metatags.Description = description
-	p.Data = all
+	p.Data = data
 
 	return h.RenderPage(ctx, p)
 }

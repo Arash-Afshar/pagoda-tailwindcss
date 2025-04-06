@@ -37,19 +37,41 @@ type User struct {
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
+	// Prices holds the value of the Prices edge.
+	Prices []*Price `json:"Prices,omitempty"`
+	// Products holds the value of the Products edge.
+	Products []*Product `json:"Products,omitempty"`
 	// ModelNames holds the value of the ModelNames edge.
 	ModelNames []*ModelName `json:"ModelNames,omitempty"`
 	// Owner holds the value of the owner edge.
 	Owner []*PasswordToken `json:"owner,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [4]bool
+}
+
+// PricesOrErr returns the Prices value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) PricesOrErr() ([]*Price, error) {
+	if e.loadedTypes[0] {
+		return e.Prices, nil
+	}
+	return nil, &NotLoadedError{edge: "Prices"}
+}
+
+// ProductsOrErr returns the Products value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ProductsOrErr() ([]*Product, error) {
+	if e.loadedTypes[1] {
+		return e.Products, nil
+	}
+	return nil, &NotLoadedError{edge: "Products"}
 }
 
 // ModelNamesOrErr returns the ModelNames value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) ModelNamesOrErr() ([]*ModelName, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[2] {
 		return e.ModelNames, nil
 	}
 	return nil, &NotLoadedError{edge: "ModelNames"}
@@ -58,7 +80,7 @@ func (e UserEdges) ModelNamesOrErr() ([]*ModelName, error) {
 // OwnerOrErr returns the Owner value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) OwnerOrErr() ([]*PasswordToken, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[3] {
 		return e.Owner, nil
 	}
 	return nil, &NotLoadedError{edge: "owner"}
@@ -145,6 +167,16 @@ func (u *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (u *User) Value(name string) (ent.Value, error) {
 	return u.selectValues.Get(name)
+}
+
+// QueryPrices queries the "Prices" edge of the User entity.
+func (u *User) QueryPrices() *PriceQuery {
+	return NewUserClient(u.config).QueryPrices(u)
+}
+
+// QueryProducts queries the "Products" edge of the User entity.
+func (u *User) QueryProducts() *ProductQuery {
+	return NewUserClient(u.config).QueryProducts(u)
 }
 
 // QueryModelNames queries the "ModelNames" edge of the User entity.

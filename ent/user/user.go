@@ -28,12 +28,30 @@ const (
 	FieldRole = "role"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgePrices holds the string denoting the prices edge name in mutations.
+	EdgePrices = "Prices"
+	// EdgeProducts holds the string denoting the products edge name in mutations.
+	EdgeProducts = "Products"
 	// EdgeModelNames holds the string denoting the modelnames edge name in mutations.
 	EdgeModelNames = "ModelNames"
 	// EdgeOwner holds the string denoting the owner edge name in mutations.
 	EdgeOwner = "owner"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// PricesTable is the table that holds the Prices relation/edge.
+	PricesTable = "prices"
+	// PricesInverseTable is the table name for the Price entity.
+	// It exists in this package in order to avoid circular dependency with the "price" package.
+	PricesInverseTable = "prices"
+	// PricesColumn is the table column denoting the Prices relation/edge.
+	PricesColumn = "user_prices"
+	// ProductsTable is the table that holds the Products relation/edge.
+	ProductsTable = "products"
+	// ProductsInverseTable is the table name for the Product entity.
+	// It exists in this package in order to avoid circular dependency with the "product" package.
+	ProductsInverseTable = "products"
+	// ProductsColumn is the table column denoting the Products relation/edge.
+	ProductsColumn = "user_products"
 	// ModelNamesTable is the table that holds the ModelNames relation/edge.
 	ModelNamesTable = "model_names"
 	// ModelNamesInverseTable is the table name for the ModelName entity.
@@ -154,6 +172,34 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
+// ByPricesCount orders the results by Prices count.
+func ByPricesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPricesStep(), opts...)
+	}
+}
+
+// ByPrices orders the results by Prices terms.
+func ByPrices(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPricesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByProductsCount orders the results by Products count.
+func ByProductsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProductsStep(), opts...)
+	}
+}
+
+// ByProducts orders the results by Products terms.
+func ByProducts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProductsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByModelNamesCount orders the results by ModelNames count.
 func ByModelNamesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -180,6 +226,20 @@ func ByOwner(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newOwnerStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newPricesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PricesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, PricesTable, PricesColumn),
+	)
+}
+func newProductsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProductsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ProductsTable, ProductsColumn),
+	)
 }
 func newModelNamesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

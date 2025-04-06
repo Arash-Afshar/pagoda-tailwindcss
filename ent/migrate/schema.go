@@ -50,6 +50,59 @@ var (
 			},
 		},
 	}
+	// PricesColumns holds the columns for the "prices" table.
+	PricesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "stripe_id", Type: field.TypeString},
+		{Name: "amount", Type: field.TypeInt},
+		{Name: "quantity", Type: field.TypeInt},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"one-time", "monthly", "annual"}, Default: "one-time"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "product_prices", Type: field.TypeInt},
+		{Name: "user_prices", Type: field.TypeInt},
+	}
+	// PricesTable holds the schema information for the "prices" table.
+	PricesTable = &schema.Table{
+		Name:       "prices",
+		Columns:    PricesColumns,
+		PrimaryKey: []*schema.Column{PricesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "prices_products_prices",
+				Columns:    []*schema.Column{PricesColumns[6]},
+				RefColumns: []*schema.Column{ProductsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "prices_users_Prices",
+				Columns:    []*schema.Column{PricesColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// ProductsColumns holds the columns for the "products" table.
+	ProductsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "stripe_id", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_products", Type: field.TypeInt},
+	}
+	// ProductsTable holds the schema information for the "products" table.
+	ProductsTable = &schema.Table{
+		Name:       "products",
+		Columns:    ProductsColumns,
+		PrimaryKey: []*schema.Column{ProductsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "products_users_Products",
+				Columns:    []*schema.Column{ProductsColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -70,6 +123,8 @@ var (
 	Tables = []*schema.Table{
 		ModelNamesTable,
 		PasswordTokensTable,
+		PricesTable,
+		ProductsTable,
 		UsersTable,
 	}
 )
@@ -77,4 +132,7 @@ var (
 func init() {
 	ModelNamesTable.ForeignKeys[0].RefTable = UsersTable
 	PasswordTokensTable.ForeignKeys[0].RefTable = UsersTable
+	PricesTable.ForeignKeys[0].RefTable = ProductsTable
+	PricesTable.ForeignKeys[1].RefTable = UsersTable
+	ProductsTable.ForeignKeys[0].RefTable = UsersTable
 }

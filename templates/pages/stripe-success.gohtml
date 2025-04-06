@@ -1,3 +1,30 @@
 {{define "content"}}
-    <p>{{.Data}}</p>
+    <div class="max-w-2xl mx-auto p-6">
+        <div class="bg-base-100 shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-bold mb-6">Existing Products</h2>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-2">Product: {{.Data.Product}}</h3>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Quantity</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range $index, $amount := .Data.Amounts}}
+                        <tr>
+                            <td>{{index $.Data.Quanities $index}}</td>
+                            <td>{{$amount}}</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {{end}}

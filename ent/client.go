@@ -17,6 +17,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/price"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/product"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 )
 
@@ -29,6 +31,10 @@ type Client struct {
 	ModelName *ModelNameClient
 	// PasswordToken is the client for interacting with the PasswordToken builders.
 	PasswordToken *PasswordTokenClient
+	// Price is the client for interacting with the Price builders.
+	Price *PriceClient
+	// Product is the client for interacting with the Product builders.
+	Product *ProductClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -44,6 +50,8 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.ModelName = NewModelNameClient(c.config)
 	c.PasswordToken = NewPasswordTokenClient(c.config)
+	c.Price = NewPriceClient(c.config)
+	c.Product = NewProductClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -139,6 +147,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:        cfg,
 		ModelName:     NewModelNameClient(cfg),
 		PasswordToken: NewPasswordTokenClient(cfg),
+		Price:         NewPriceClient(cfg),
+		Product:       NewProductClient(cfg),
 		User:          NewUserClient(cfg),
 	}, nil
 }
@@ -161,6 +171,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:        cfg,
 		ModelName:     NewModelNameClient(cfg),
 		PasswordToken: NewPasswordTokenClient(cfg),
+		Price:         NewPriceClient(cfg),
+		Product:       NewProductClient(cfg),
 		User:          NewUserClient(cfg),
 	}, nil
 }
@@ -192,6 +204,8 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	c.ModelName.Use(hooks...)
 	c.PasswordToken.Use(hooks...)
+	c.Price.Use(hooks...)
+	c.Product.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -200,6 +214,8 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.ModelName.Intercept(interceptors...)
 	c.PasswordToken.Intercept(interceptors...)
+	c.Price.Intercept(interceptors...)
+	c.Product.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
@@ -210,6 +226,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ModelName.mutate(ctx, m)
 	case *PasswordTokenMutation:
 		return c.PasswordToken.mutate(ctx, m)
+	case *PriceMutation:
+		return c.Price.mutate(ctx, m)
+	case *ProductMutation:
+		return c.Product.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -515,6 +535,336 @@ func (c *PasswordTokenClient) mutate(ctx context.Context, m *PasswordTokenMutati
 	}
 }
 
+// PriceClient is a client for the Price schema.
+type PriceClient struct {
+	config
+}
+
+// NewPriceClient returns a client for the Price from the given config.
+func NewPriceClient(c config) *PriceClient {
+	return &PriceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `price.Hooks(f(g(h())))`.
+func (c *PriceClient) Use(hooks ...Hook) {
+	c.hooks.Price = append(c.hooks.Price, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `price.Intercept(f(g(h())))`.
+func (c *PriceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Price = append(c.inters.Price, interceptors...)
+}
+
+// Create returns a builder for creating a Price entity.
+func (c *PriceClient) Create() *PriceCreate {
+	mutation := newPriceMutation(c.config, OpCreate)
+	return &PriceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Price entities.
+func (c *PriceClient) CreateBulk(builders ...*PriceCreate) *PriceCreateBulk {
+	return &PriceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PriceClient) MapCreateBulk(slice any, setFunc func(*PriceCreate, int)) *PriceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PriceCreateBulk{err: fmt.Errorf("calling to PriceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PriceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PriceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Price.
+func (c *PriceClient) Update() *PriceUpdate {
+	mutation := newPriceMutation(c.config, OpUpdate)
+	return &PriceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PriceClient) UpdateOne(pr *Price) *PriceUpdateOne {
+	mutation := newPriceMutation(c.config, OpUpdateOne, withPrice(pr))
+	return &PriceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PriceClient) UpdateOneID(id int) *PriceUpdateOne {
+	mutation := newPriceMutation(c.config, OpUpdateOne, withPriceID(id))
+	return &PriceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Price.
+func (c *PriceClient) Delete() *PriceDelete {
+	mutation := newPriceMutation(c.config, OpDelete)
+	return &PriceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PriceClient) DeleteOne(pr *Price) *PriceDeleteOne {
+	return c.DeleteOneID(pr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PriceClient) DeleteOneID(id int) *PriceDeleteOne {
+	builder := c.Delete().Where(price.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PriceDeleteOne{builder}
+}
+
+// Query returns a query builder for Price.
+func (c *PriceClient) Query() *PriceQuery {
+	return &PriceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePrice},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Price entity by its id.
+func (c *PriceClient) Get(ctx context.Context, id int) (*Price, error) {
+	return c.Query().Where(price.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PriceClient) GetX(ctx context.Context, id int) *Price {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a Price.
+func (c *PriceClient) QueryUser(pr *Price) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(price.Table, price.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, price.UserTable, price.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProduct queries the product edge of a Price.
+func (c *PriceClient) QueryProduct(pr *Price) *ProductQuery {
+	query := (&ProductClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(price.Table, price.FieldID, id),
+			sqlgraph.To(product.Table, product.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, price.ProductTable, price.ProductColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PriceClient) Hooks() []Hook {
+	return c.hooks.Price
+}
+
+// Interceptors returns the client interceptors.
+func (c *PriceClient) Interceptors() []Interceptor {
+	return c.inters.Price
+}
+
+func (c *PriceClient) mutate(ctx context.Context, m *PriceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PriceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PriceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PriceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PriceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Price mutation op: %q", m.Op())
+	}
+}
+
+// ProductClient is a client for the Product schema.
+type ProductClient struct {
+	config
+}
+
+// NewProductClient returns a client for the Product from the given config.
+func NewProductClient(c config) *ProductClient {
+	return &ProductClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `product.Hooks(f(g(h())))`.
+func (c *ProductClient) Use(hooks ...Hook) {
+	c.hooks.Product = append(c.hooks.Product, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `product.Intercept(f(g(h())))`.
+func (c *ProductClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Product = append(c.inters.Product, interceptors...)
+}
+
+// Create returns a builder for creating a Product entity.
+func (c *ProductClient) Create() *ProductCreate {
+	mutation := newProductMutation(c.config, OpCreate)
+	return &ProductCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Product entities.
+func (c *ProductClient) CreateBulk(builders ...*ProductCreate) *ProductCreateBulk {
+	return &ProductCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ProductClient) MapCreateBulk(slice any, setFunc func(*ProductCreate, int)) *ProductCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ProductCreateBulk{err: fmt.Errorf("calling to ProductClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ProductCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ProductCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Product.
+func (c *ProductClient) Update() *ProductUpdate {
+	mutation := newProductMutation(c.config, OpUpdate)
+	return &ProductUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProductClient) UpdateOne(pr *Product) *ProductUpdateOne {
+	mutation := newProductMutation(c.config, OpUpdateOne, withProduct(pr))
+	return &ProductUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProductClient) UpdateOneID(id int) *ProductUpdateOne {
+	mutation := newProductMutation(c.config, OpUpdateOne, withProductID(id))
+	return &ProductUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Product.
+func (c *ProductClient) Delete() *ProductDelete {
+	mutation := newProductMutation(c.config, OpDelete)
+	return &ProductDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ProductClient) DeleteOne(pr *Product) *ProductDeleteOne {
+	return c.DeleteOneID(pr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ProductClient) DeleteOneID(id int) *ProductDeleteOne {
+	builder := c.Delete().Where(product.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProductDeleteOne{builder}
+}
+
+// Query returns a query builder for Product.
+func (c *ProductClient) Query() *ProductQuery {
+	return &ProductQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeProduct},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Product entity by its id.
+func (c *ProductClient) Get(ctx context.Context, id int) (*Product, error) {
+	return c.Query().Where(product.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProductClient) GetX(ctx context.Context, id int) *Product {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a Product.
+func (c *ProductClient) QueryUser(pr *Product) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(product.Table, product.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, product.UserTable, product.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPrices queries the prices edge of a Product.
+func (c *ProductClient) QueryPrices(pr *Product) *PriceQuery {
+	query := (&PriceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(product.Table, product.FieldID, id),
+			sqlgraph.To(price.Table, price.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, product.PricesTable, product.PricesColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProductClient) Hooks() []Hook {
+	return c.hooks.Product
+}
+
+// Interceptors returns the client interceptors.
+func (c *ProductClient) Interceptors() []Interceptor {
+	return c.inters.Product
+}
+
+func (c *ProductClient) mutate(ctx context.Context, m *ProductMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ProductCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ProductUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ProductUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ProductDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Product mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -623,6 +973,38 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 	return obj
 }
 
+// QueryPrices queries the Prices edge of a User.
+func (c *UserClient) QueryPrices(u *User) *PriceQuery {
+	query := (&PriceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(price.Table, price.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.PricesTable, user.PricesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProducts queries the Products edge of a User.
+func (c *UserClient) QueryProducts(u *User) *ProductQuery {
+	query := (&ProductClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(product.Table, product.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ProductsTable, user.ProductsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryModelNames queries the ModelNames edge of a User.
 func (c *UserClient) QueryModelNames(u *User) *ModelNameQuery {
 	query := (&ModelNameClient{config: c.config}).Query()
@@ -684,9 +1066,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		ModelName, PasswordToken, User []ent.Hook
+		ModelName, PasswordToken, Price, Product, User []ent.Hook
 	}
 	inters struct {
-		ModelName, PasswordToken, User []ent.Interceptor
+		ModelName, PasswordToken, Price, Product, User []ent.Interceptor
 	}
 )
