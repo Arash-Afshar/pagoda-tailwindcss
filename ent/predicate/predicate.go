@@ -12,5 +12,11 @@ type ModelName func(*sql.Selector)
 // PasswordToken is the predicate function for passwordtoken builders.
 type PasswordToken func(*sql.Selector)
 
+// Price is the predicate function for price builders.
+type Price func(*sql.Selector)
+
+// Product is the predicate function for product builders.
+type Product func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

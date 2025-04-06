@@ -345,6 +345,52 @@ func CreatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldCreatedAt, v))
 }
 
+// HasPrices applies the HasEdge predicate on the "Prices" edge.
+func HasPrices() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PricesTable, PricesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPricesWith applies the HasEdge predicate on the "Prices" edge with a given conditions (other predicates).
+func HasPricesWith(preds ...predicate.Price) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newPricesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProducts applies the HasEdge predicate on the "Products" edge.
+func HasProducts() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProductsTable, ProductsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProductsWith applies the HasEdge predicate on the "Products" edge with a given conditions (other predicates).
+func HasProductsWith(preds ...predicate.Product) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newProductsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasModelNames applies the HasEdge predicate on the "ModelNames" edge.
 func HasModelNames() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

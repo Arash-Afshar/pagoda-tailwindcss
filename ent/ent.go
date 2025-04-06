@@ -14,6 +14,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/price"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/product"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 )
 
@@ -77,6 +79,8 @@ func checkColumn(table, column string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			modelname.Table:     modelname.ValidColumn,
 			passwordtoken.Table: passwordtoken.ValidColumn,
+			price.Table:         price.ValidColumn,
+			product.Table:       product.ValidColumn,
 			user.Table:          user.ValidColumn,
 		})
 	})

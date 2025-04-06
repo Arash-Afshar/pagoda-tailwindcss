@@ -17,6 +17,8 @@ type (
 	Dashboard struct {
 		*services.TemplateRenderer
 		db            *ent.Client
+		price *ModelPrice
+		product *ModelProduct
 		modelname     *ModelModelName
 		dashboardData *DashboardData
 	}
@@ -46,6 +48,8 @@ func init() {
 func (h *Dashboard) Init(c *services.Container) error {
 	h.TemplateRenderer = c.TemplateRenderer
 	h.db = c.ORM
+	h.price = NewModelPrice(c)
+	h.product = NewModelProduct(c)
 	h.modelname = NewModelModelName(c)
 	h.dashboardData = &DashboardData{}
 	return nil
@@ -55,6 +59,16 @@ func (h *Dashboard) Routes(g *echo.Group) {
 	g.GET("/dashboard", h.Home, middleware.RequireAuthentication()).Name = routeNameDashboard
 	auth := g.Group("/dashboard", middleware.RequireAuthentication())
 	// --------- Sub-Routes --------
+
+	for _, route := range h.price.Routes().routeMaps {
+		auth.Add(route.verb, route.path, route.handler).Name = route.name
+	}
+	h.dashboardData.RouteMapMetas = append(h.dashboardData.RouteMapMetas, h.price.Routes())
+
+	for _, route := range h.product.Routes().routeMaps {
+		auth.Add(route.verb, route.path, route.handler).Name = route.name
+	}
+	h.dashboardData.RouteMapMetas = append(h.dashboardData.RouteMapMetas, h.product.Routes())
 
 	for _, route := range h.modelname.Routes().routeMaps {
 		auth.Add(route.verb, route.path, route.handler).Name = route.name

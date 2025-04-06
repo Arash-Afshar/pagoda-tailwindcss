@@ -15,6 +15,8 @@ import (
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/predicate"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/price"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/product"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 )
 
@@ -25,6 +27,8 @@ type UserQuery struct {
 	order          []user.OrderOption
 	inters         []Interceptor
 	predicates     []predicate.User
+	withPrices     *PriceQuery
+	withProducts   *ProductQuery
 	withModelNames *ModelNameQuery
 	withOwner      *PasswordTokenQuery
 	// intermediate query (i.e. traversal path).
@@ -61,6 +65,50 @@ func (uq *UserQuery) Unique(unique bool) *UserQuery {
 func (uq *UserQuery) Order(o ...user.OrderOption) *UserQuery {
 	uq.order = append(uq.order, o...)
 	return uq
+}
+
+// QueryPrices chains the current query on the "Prices" edge.
+func (uq *UserQuery) QueryPrices() *PriceQuery {
+	query := (&PriceClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(price.Table, price.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.PricesTable, user.PricesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProducts chains the current query on the "Products" edge.
+func (uq *UserQuery) QueryProducts() *ProductQuery {
+	query := (&ProductClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(product.Table, product.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ProductsTable, user.ProductsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryModelNames chains the current query on the "ModelNames" edge.
@@ -299,12 +347,36 @@ func (uq *UserQuery) Clone() *UserQuery {
 		order:          append([]user.OrderOption{}, uq.order...),
 		inters:         append([]Interceptor{}, uq.inters...),
 		predicates:     append([]predicate.User{}, uq.predicates...),
+		withPrices:     uq.withPrices.Clone(),
+		withProducts:   uq.withProducts.Clone(),
 		withModelNames: uq.withModelNames.Clone(),
 		withOwner:      uq.withOwner.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
 	}
+}
+
+// WithPrices tells the query-builder to eager-load the nodes that are connected to
+// the "Prices" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithPrices(opts ...func(*PriceQuery)) *UserQuery {
+	query := (&PriceClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withPrices = query
+	return uq
+}
+
+// WithProducts tells the query-builder to eager-load the nodes that are connected to
+// the "Products" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithProducts(opts ...func(*ProductQuery)) *UserQuery {
+	query := (&ProductClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withProducts = query
+	return uq
 }
 
 // WithModelNames tells the query-builder to eager-load the nodes that are connected to
@@ -407,7 +479,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [4]bool{
+			uq.withPrices != nil,
+			uq.withProducts != nil,
 			uq.withModelNames != nil,
 			uq.withOwner != nil,
 		}
@@ -430,6 +504,20 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := uq.withPrices; query != nil {
+		if err := uq.loadPrices(ctx, query, nodes,
+			func(n *User) { n.Edges.Prices = []*Price{} },
+			func(n *User, e *Price) { n.Edges.Prices = append(n.Edges.Prices, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withProducts; query != nil {
+		if err := uq.loadProducts(ctx, query, nodes,
+			func(n *User) { n.Edges.Products = []*Product{} },
+			func(n *User, e *Product) { n.Edges.Products = append(n.Edges.Products, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := uq.withModelNames; query != nil {
 		if err := uq.loadModelNames(ctx, query, nodes,
 			func(n *User) { n.Edges.ModelNames = []*ModelName{} },
@@ -447,6 +535,68 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	return nodes, nil
 }
 
+func (uq *UserQuery) loadPrices(ctx context.Context, query *PriceQuery, nodes []*User, init func(*User), assign func(*User, *Price)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Price(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.PricesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_prices
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_prices" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_prices" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadProducts(ctx context.Context, query *ProductQuery, nodes []*User, init func(*User), assign func(*User, *Product)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Product(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.ProductsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_products
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_products" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_products" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 func (uq *UserQuery) loadModelNames(ctx context.Context, query *ModelNameQuery, nodes []*User, init func(*User), assign func(*User, *ModelName)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*User)

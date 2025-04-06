@@ -16,6 +16,10 @@ type Tx struct {
 	ModelName *ModelNameClient
 	// PasswordToken is the client for interacting with the PasswordToken builders.
 	PasswordToken *PasswordTokenClient
+	// Price is the client for interacting with the Price builders.
+	Price *PriceClient
+	// Product is the client for interacting with the Product builders.
+	Product *ProductClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -151,6 +155,8 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.ModelName = NewModelNameClient(tx.config)
 	tx.PasswordToken = NewPasswordTokenClient(tx.config)
+	tx.Price = NewPriceClient(tx.config)
+	tx.Product = NewProductClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

@@ -50,6 +50,8 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("Prices", Price.Type),
+		edge.To("Products", Product.Type),
 		edge.To("ModelNames", ModelName.Type),
 		edge.From("owner", PasswordToken.Type).
 			Ref("user"),

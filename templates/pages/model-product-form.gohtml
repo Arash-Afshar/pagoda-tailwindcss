@@ -1,0 +1,64 @@
+{{define "content"}}
+<div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+        <h2 class="card-title mb-4">{{if .Data.Product}}Edit{{else}}New{{end}} Product</h2>
+        <form
+            {{if .Data.Product}}
+            hx-put="{{url "model-product-submit-edit" .Data.Product.ID}}"
+            {{else}}
+            hx-post="{{url "model-product-submit-new"}}"
+            {{end}}
+            hx-target="#product-container"
+            hx-on::after-request="if(this.querySelector('[type=submit]').innerText === 'Update') { document.getElementById('form-container').innerHTML = ''; } else { this.reset(); this.querySelector('input[name=name]').focus(); }"
+            class="space-y-4"
+        >
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Name</span>
+                </label>
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Enter Name"
+                    value="{{.Form.Name}}"
+                    class="input w-full {{.Form.Submission.GetFieldStatusClass "Name"}}"
+                    autofocus
+                />
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "Name")}}
+            </div>
+
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Stripe ID</span>
+                </label>
+                <input
+                    type="text"
+                    name="stripe_id"
+                    placeholder="Enter Stripe ID"
+                    value="{{.Form.StripeID}}"
+                    class="input w-full {{.Form.Submission.GetFieldStatusClass "StripeID"}}"
+                />
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "StripeID")}}
+            </div>
+
+
+
+            <div class="card-actions justify-end mt-6">
+                <button
+                    type="button"
+                    class="btn btn-ghost"
+                    onclick="this.closest('.card').innerHTML = ''"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    {{if .Data.Product}}Update{{else}}Create{{end}}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}

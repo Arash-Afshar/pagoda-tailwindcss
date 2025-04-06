@@ -7,6 +7,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Arash-Afshar/pagoda-tailwindcss/config"
+	"github.com/eko/gocache/lib/v4/cache"
+	"github.com/eko/gocache/lib/v4/store"
+	redisstore "github.com/eko/gocache/store/redis/v4"
+	"github.com/redis/go-redis/v9"
+
 	"github.com/maypok86/otter"
 )
 
@@ -63,6 +69,18 @@ type (
 	// inMemoryCacheStore is a cache store implementation in memory
 	inMemoryCacheStore struct {
 		store    *otter.CacheWithVariableTTL[string, any]
+		tagIndex *tagIndex
+	}
+
+	// redisCacheStore is a cache store implementation in redis
+	redisCacheStore struct {
+		// store stores the redis client
+		store *redis.Client
+
+		// cache stores the cache interface
+		cache *cache.Cache[any]
+
+		// tagIndex maintains an index to support cache tags for redis cache stores.
 		tagIndex *tagIndex
 	}
 
@@ -347,4 +365,93 @@ func (i *tagIndex) purgeKeys(keys ...string) {
 			}
 		}
 	}
+}
+
+// newRedisCache creates a new redis CacheStore
+func newRedisCache(cfg *config.Config) (CacheStore, error) {
+	s := &redisCacheStore{
+		tagIndex: newTagIndex(),
+	}
+
+	// Determine the database based on the environment
+	db := cfg.Cache.Redis.Database
+	if cfg.App.Environment == config.EnvTest {
+		db = cfg.Cache.Redis.TestDatabase
+	}
+
+	s.store = redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", cfg.Cache.Redis.Hostname, cfg.Cache.Redis.Port),
+		Password: cfg.Cache.Redis.Password,
+		DB:       db,
+	})
+	if _, err := s.store.Ping(context.Background()).Result(); err != nil {
+		return s, err
+	}
+
+	// Flush the database if this is the test environment
+	if cfg.App.Environment == config.EnvTest {
+		if err := s.store.FlushDB(context.Background()).Err(); err != nil {
+			return s, err
+		}
+	}
+
+	cacheStore := redisstore.NewRedis(s.store)
+	s.cache = cache.New[any](cacheStore)
+
+	return s, nil
+}
+
+func (s *redisCacheStore) get(ctx context.Context, op *CacheGetOp) (any, error) {
+	cmd := s.store.Get(ctx, op.client.cacheKey(op.group, op.key))
+
+	if cmd.Err() != nil {
+		return nil, ErrCacheMiss
+	}
+
+	return cmd.Val(), nil
+}
+
+func (s *redisCacheStore) set(ctx context.Context, op *CacheSetOp) error {
+	key := op.client.cacheKey(op.group, op.key)
+
+	err := s.cache.Set(
+		ctx,
+		key,
+		op.data,
+		store.WithExpiration(op.expiration),
+	)
+
+	if len(op.tags) > 0 {
+		s.tagIndex.setTags(key, op.tags...)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *redisCacheStore) flush(ctx context.Context, op *CacheFlushOp) error {
+	keys := make([]string, 0)
+
+	if key := op.client.cacheKey(op.group, op.key); key != "" {
+		keys = append(keys, key)
+	}
+
+	if len(op.tags) > 0 {
+		keys = append(keys, s.tagIndex.purgeTags(op.tags...)...)
+	}
+
+	for _, key := range keys {
+		s.store.Del(ctx, key)
+	}
+
+	s.tagIndex.purgeKeys(keys...)
+
+	return nil
+}
+
+func (s *redisCacheStore) close() {
+	s.store.Close()
 }

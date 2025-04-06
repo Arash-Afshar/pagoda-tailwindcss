@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/price"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/product"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/user"
 )
 
@@ -80,6 +82,36 @@ func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 		uc.SetCreatedAt(*t)
 	}
 	return uc
+}
+
+// AddPriceIDs adds the "Prices" edge to the Price entity by IDs.
+func (uc *UserCreate) AddPriceIDs(ids ...int) *UserCreate {
+	uc.mutation.AddPriceIDs(ids...)
+	return uc
+}
+
+// AddPrices adds the "Prices" edges to the Price entity.
+func (uc *UserCreate) AddPrices(p ...*Price) *UserCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uc.AddPriceIDs(ids...)
+}
+
+// AddProductIDs adds the "Products" edge to the Product entity by IDs.
+func (uc *UserCreate) AddProductIDs(ids ...int) *UserCreate {
+	uc.mutation.AddProductIDs(ids...)
+	return uc
+}
+
+// AddProducts adds the "Products" edges to the Product entity.
+func (uc *UserCreate) AddProducts(p ...*Product) *UserCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uc.AddProductIDs(ids...)
 }
 
 // AddModelNameIDs adds the "ModelNames" edge to the ModelName entity by IDs.
@@ -256,6 +288,38 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := uc.mutation.PricesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PricesTable,
+			Columns: []string{user.PricesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(price.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ProductsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProductsTable,
+			Columns: []string{user.ProductsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(product.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := uc.mutation.ModelNamesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

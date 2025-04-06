@@ -27,3 +27,4 @@ sed -i "s/pagoda/${APP_NAME,,}/g" Makefile
 sed -i "s/PAGODA/${APP_NAME^^}/g" Makefile
 sed -i "s/pagoda/${APP_NAME,,}/g" Dockerfile
 sed -i "s/pagoda/${APP_NAME,,}/g" config/deploy.yml
+sed -i "s/pagoda/${APP_NAME,,}/g" docker-compose.yml

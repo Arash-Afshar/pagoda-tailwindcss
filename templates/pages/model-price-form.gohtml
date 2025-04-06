@@ -1,0 +1,97 @@
+{{define "content"}}
+<div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+        <h2 class="card-title mb-4">{{if .Data.Price}}Edit{{else}}New{{end}} Price</h2>
+        <form
+            {{if .Data.Price}}
+            hx-put="{{url "model-price-submit-edit" .Data.Price.ID}}"
+            {{else}}
+            hx-post="{{url "model-price-submit-new"}}"
+            {{end}}
+            hx-target="#price-container"
+            hx-on::after-request="if(this.querySelector('[type=submit]').innerText === 'Update') { document.getElementById('form-container').innerHTML = ''; } else { this.reset(); this.querySelector('input[name=name]').focus(); }"
+            class="space-y-4"
+        >
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Product</span>
+                </label>
+                <select
+                    name="product_id"
+                    class="select w-full {{.Form.Submission.GetFieldStatusClass "ProductID"}}"
+                >
+                    <option value="">Select Product</option>
+                    {{range .Data.AllProducts}}
+                    <option value="{{.ID}}" {{if eq .ID $.Form.ProductID}}selected{{end}}>{{.Name}}</option>
+                    {{end}}
+                </select>
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "ProductID")}}
+            </div>
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Stripe ID</span>
+                </label>
+                <input
+                    type="text"
+                    name="stripe_id"
+                    placeholder="Enter Stripe ID"
+                    value="{{.Form.StripeID}}"
+                    class="input w-full {{.Form.Submission.GetFieldStatusClass "StripeID"}}"
+                />
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "StripeID")}}
+            </div>
+
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Amount</span>
+                </label>
+                <input
+                    type="number"
+                    name="amount"
+                    placeholder="Enter Amount"
+                    value="{{.Form.Amount}}"
+                    class="input w-full {{.Form.Submission.GetFieldStatusClass "Amount"}}"
+                />
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "Amount")}}
+            </div>
+
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Quantity</span>
+                </label>
+                <input
+                    type="number"
+                    name="quantity"
+                    placeholder="Enter Quantity"
+                    value="{{.Form.Quantity}}"
+                    class="input w-full {{.Form.Submission.GetFieldStatusClass "Quantity"}}"
+                />
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "Quantity")}}
+            </div>
+
+            <input
+                type="hidden"
+                name="type"
+                value="one-time"
+            />
+
+
+            <div class="card-actions justify-end mt-6">
+                <button
+                    type="button"
+                    class="btn btn-ghost"
+                    onclick="this.closest('.card').innerHTML = ''"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    {{if .Data.Price}}Update{{else}}Create{{end}}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}
