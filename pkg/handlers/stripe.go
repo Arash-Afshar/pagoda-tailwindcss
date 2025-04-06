@@ -76,9 +76,9 @@ func (h *Stripe) Checkout(ctx echo.Context) error {
 		return err
 	}
 
-	// TODO: figure out how to get the correct url
-	successUrl := "http://localhost:8000/stripe/success?session_id={CHECKOUT_SESSION_ID}"
-	cancelUrl := "http://localhost:8000/stripe/cancel"
+	baseURL := ctx.Scheme() + "://" + ctx.Request().Host
+	successUrl := baseURL + "/stripe/success?session_id={CHECKOUT_SESSION_ID}"
+	cancelUrl := baseURL + "/stripe/cancel"
 
 	products, err := h.db.Product.
 		Query().
