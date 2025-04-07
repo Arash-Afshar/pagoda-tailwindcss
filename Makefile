@@ -78,10 +78,10 @@ deploy:
 stripe-mock:
 	docker run --rm -it -p 12111-12112:12111-12112 stripe/stripe-mock:latest
 
-.PHONY: redis-up
-redis-up:
+.PHONY: up
+up:
 	docker-compose up
 
-.PHONY: redis-down
-redis-down:
+.PHONY: down
+down:
 	docker-compose down

@@ -41,12 +41,13 @@ builder:
   #   RUBY_VERSION: <%= ENV["RBENV_VERSION"] || ENV["rvm_ruby_string"] || "#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}" %>
 
 # Inject ENV variables into containers (secrets come from .kamal/secrets).
-#
-# env:
-#   clear:
-#     DB_HOST: 192.168.0.2
-#   secret:
-#     - RAILS_MASTER_KEY
+
+env:
+  clear:
+    PAGODA_CACHE_REDIS_HOSTNAME: pagoda_cache
+  secret:
+    - PAGODA_STRIPE_KEY
+    - PAGODA_APP_ENCRYPTIONKEY
 
 # Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
 # "bin/kamal app logs -r job" will tail logs from the first server in the job section.
@@ -93,10 +94,12 @@ accessories:
 #       - db/production.sql:/docker-entrypoint-initdb.d/setup.sql
 #     directories:
 #       - data:/var/lib/mysql
- redis:
+
+pagoda_cache:
   image: "redis:alpine"
-  ports:
-    - "127.0.0.1:6379:6379"
-  directories:
-    - redis-data:/data
-  command: redis-server --appendonly yes
+  host: 192.168.0.1
+  port: "127.0.0.1:6379:6379"
+  volumes:
+    - pagoda-cache-data:/data
+  cmd: redis-server --appendonly yes
+  service: pagoda_cache
