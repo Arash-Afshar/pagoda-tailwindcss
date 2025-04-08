@@ -19,7 +19,6 @@ ent-new:
 
 .PHONY: dev
 dev:
-	clear
 	air -c .air.toml
 
 .PHONY: dev-css

@@ -9,6 +9,28 @@ services:
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
+    networks:
+      - pagoda_network
+
+  pagoda_server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: pagoda_server
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - .:/app
+    command: >
+      sh -c "scripts/dev.sh"
+    depends_on:
+      - pagoda_cache
+    networks:
+      - pagoda_network
 
 volumes:
   redis-data:
+
+networks:
+  pagoda_network:
+    driver: bridge
