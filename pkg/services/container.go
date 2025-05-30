@@ -125,20 +125,25 @@ func (c *Container) initWeb() {
 
 // initCache initializes the cache
 func (c *Container) initCache() {
-	store, err := newRedisCache(c.Config)
-	if err != nil {
-		panic(err)
+	switch c.Config.Cache.Choice {
+	case "redis":
+		store, err := newRedisCache(c.Config)
+		if err != nil {
+			panic(err)
+		}
+
+		c.Cache = NewCacheClient(store)
+	case "otter":
+
+		store, err := newInMemoryCache(c.Config.Cache.Otter.Capacity)
+		if err != nil {
+			panic(err)
+		}
+
+		c.Cache = NewCacheClient(store)
+	default:
+		panic(fmt.Sprintf("invalid cache choice: %s", c.Config.Cache.Choice))
 	}
-
-	c.Cache = NewCacheClient(store)
-
-	// TODO: based on the config, either use in-memory or redis cache
-	_, err = newInMemoryCache(c.Config.Cache.Otter.Capacity)
-	if err != nil {
-		panic(err)
-	}
-
-	// c.Cache = NewCacheClient(store)
 }
 
 // initDatabase initializes the database

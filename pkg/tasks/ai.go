@@ -55,6 +55,7 @@ func updateAITask(ctx context.Context, c *services.Container, task AITask, statu
 		Save(ctx)
 	return err
 }
+
 func NewAITaskQueue(c *services.Container) backlite.Queue {
 	return backlite.NewQueue[AITask](func(ctx context.Context, task AITask) error {
 		aiClient := c.AIs.GetClient(task.AIClientName)
