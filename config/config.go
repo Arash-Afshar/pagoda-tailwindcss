@@ -60,6 +60,7 @@ type (
 		Tasks    TasksConfig
 		Mail     MailConfig
 		Stripe   StripeConfig
+		AIs      []AIConfig
 	}
 
 	// HTTPConfig stores HTTP configuration
@@ -132,6 +133,13 @@ type (
 		URL           string
 		Key           string
 		WebhookSecret string
+	}
+
+	// AIConfig stores the ai configuration
+	AIConfig struct {
+		Name string
+		URL  string
+		Key  string
 	}
 
 	// MailConfig stores the mail configuration

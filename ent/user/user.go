@@ -34,6 +34,8 @@ const (
 	EdgeProducts = "Products"
 	// EdgeModelNames holds the string denoting the modelnames edge name in mutations.
 	EdgeModelNames = "ModelNames"
+	// EdgeAIs holds the string denoting the ais edge name in mutations.
+	EdgeAIs = "AIs"
 	// EdgeOwner holds the string denoting the owner edge name in mutations.
 	EdgeOwner = "owner"
 	// Table holds the table name of the user in the database.
@@ -59,6 +61,13 @@ const (
 	ModelNamesInverseTable = "model_names"
 	// ModelNamesColumn is the table column denoting the ModelNames relation/edge.
 	ModelNamesColumn = "user_model_names"
+	// AIsTable is the table that holds the AIs relation/edge.
+	AIsTable = "ais"
+	// AIsInverseTable is the table name for the AI entity.
+	// It exists in this package in order to avoid circular dependency with the "ai" package.
+	AIsInverseTable = "ais"
+	// AIsColumn is the table column denoting the AIs relation/edge.
+	AIsColumn = "user_ais"
 	// OwnerTable is the table that holds the owner relation/edge.
 	OwnerTable = "password_tokens"
 	// OwnerInverseTable is the table name for the PasswordToken entity.
@@ -214,6 +223,20 @@ func ByModelNames(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByAIsCount orders the results by AIs count.
+func ByAIsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAIsStep(), opts...)
+	}
+}
+
+// ByAIs orders the results by AIs terms.
+func ByAIs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAIsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByOwnerCount orders the results by owner count.
 func ByOwnerCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -246,6 +269,13 @@ func newModelNamesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ModelNamesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ModelNamesTable, ModelNamesColumn),
+	)
+}
+func newAIsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AIsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AIsTable, AIsColumn),
 	)
 }
 func newOwnerStep() *sqlgraph.Step {

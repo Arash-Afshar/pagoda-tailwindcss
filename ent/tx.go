@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// AI is the client for interacting with the AI builders.
+	AI *AIClient
 	// ModelName is the client for interacting with the ModelName builders.
 	ModelName *ModelNameClient
 	// PasswordToken is the client for interacting with the PasswordToken builders.
@@ -153,6 +155,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.AI = NewAIClient(tx.config)
 	tx.ModelName = NewModelNameClient(tx.config)
 	tx.PasswordToken = NewPasswordTokenClient(tx.config)
 	tx.Price = NewPriceClient(tx.config)
@@ -167,7 +170,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: ModelName.QueryXXX(), the query will be executed
+// applies a query, for example: AI.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

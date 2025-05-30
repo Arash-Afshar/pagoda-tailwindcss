@@ -5,6 +5,7 @@ package runtime
 import (
 	"time"
 
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/ai"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/price"
@@ -17,6 +18,24 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	aiFields := schema.AI{}.Fields()
+	_ = aiFields
+	// aiDescAiClientName is the schema descriptor for ai_client_name field.
+	aiDescAiClientName := aiFields[0].Descriptor()
+	// ai.AiClientNameValidator is a validator for the "ai_client_name" field. It is called by the builders before save.
+	ai.AiClientNameValidator = aiDescAiClientName.Validators[0].(func(string) error)
+	// aiDescPrompt is the schema descriptor for prompt field.
+	aiDescPrompt := aiFields[1].Descriptor()
+	// ai.PromptValidator is a validator for the "prompt" field. It is called by the builders before save.
+	ai.PromptValidator = aiDescPrompt.Validators[0].(func(string) error)
+	// aiDescResult is the schema descriptor for result field.
+	aiDescResult := aiFields[3].Descriptor()
+	// ai.DefaultResult holds the default value on creation for the result field.
+	ai.DefaultResult = aiDescResult.Default.([]byte)
+	// aiDescCreatedAt is the schema descriptor for created_at field.
+	aiDescCreatedAt := aiFields[4].Descriptor()
+	// ai.DefaultCreatedAt holds the default value on creation for the created_at field.
+	ai.DefaultCreatedAt = aiDescCreatedAt.Default.(func() time.Time)
 	modelnameFields := schema.ModelName{}.Fields()
 	_ = modelnameFields
 	// modelnameDescFieldName is the schema descriptor for field_name field.

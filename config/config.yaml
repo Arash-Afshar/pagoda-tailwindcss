@@ -49,6 +49,14 @@ stripe:
   key: "change-me"
   webhookSecret: "change-me"
 
+ais:
+  - name: "test"
+    url: ""
+    key: "change-me"
+  - name: "ollama"
+    url: "http://localhost:11434"
+    key: "change-me"
+
 mail:
   hostname: "localhost"
   port: 25

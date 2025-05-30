@@ -414,6 +414,29 @@ func HasModelNamesWith(preds ...predicate.ModelName) predicate.User {
 	})
 }
 
+// HasAIs applies the HasEdge predicate on the "AIs" edge.
+func HasAIs() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AIsTable, AIsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAIsWith applies the HasEdge predicate on the "AIs" edge with a given conditions (other predicates).
+func HasAIsWith(preds ...predicate.AI) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newAIsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasOwner applies the HasEdge predicate on the "owner" edge.
 func HasOwner() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

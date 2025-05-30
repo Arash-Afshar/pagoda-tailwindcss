@@ -8,6 +8,31 @@ import (
 )
 
 var (
+	// AisColumns holds the columns for the "ais" table.
+	AisColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "ai_client_name", Type: field.TypeString},
+		{Name: "prompt", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"running", "completed", "failed"}, Default: "running"},
+		{Name: "result", Type: field.TypeBytes},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "user_ais", Type: field.TypeInt},
+	}
+	// AisTable holds the schema information for the "ais" table.
+	AisTable = &schema.Table{
+		Name:       "ais",
+		Columns:    AisColumns,
+		PrimaryKey: []*schema.Column{AisColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "ais_users_AIs",
+				Columns:    []*schema.Column{AisColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// ModelNamesColumns holds the columns for the "model_names" table.
 	ModelNamesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -121,6 +146,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AisTable,
 		ModelNamesTable,
 		PasswordTokensTable,
 		PricesTable,
@@ -130,6 +156,7 @@ var (
 )
 
 func init() {
+	AisTable.ForeignKeys[0].RefTable = UsersTable
 	ModelNamesTable.ForeignKeys[0].RefTable = UsersTable
 	PasswordTokensTable.ForeignKeys[0].RefTable = UsersTable
 	PricesTable.ForeignKeys[0].RefTable = ProductsTable

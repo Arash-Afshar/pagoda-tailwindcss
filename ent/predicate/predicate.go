@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AI is the predicate function for ai builders.
+type AI func(*sql.Selector)
+
 // ModelName is the predicate function for modelname builders.
 type ModelName func(*sql.Selector)
 

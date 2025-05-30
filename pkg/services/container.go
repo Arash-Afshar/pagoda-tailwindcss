@@ -46,6 +46,9 @@ type Container struct {
 	// Stripe stores a client to the Stripe API
 	Stripe *StripeClient
 
+	// AIs stores clients to the AI APIs
+	AIs AIClients
+
 	// Mail stores an email sending client
 	Mail *MailClient
 
@@ -73,6 +76,7 @@ func NewContainer() *Container {
 	c.initMail()
 	c.initTasks()
 	c.initStripe()
+	c.initAIs()
 	return c
 }
 
@@ -177,9 +181,18 @@ func (c *Container) initTemplateRenderer() {
 	c.TemplateRenderer = NewTemplateRenderer(c.Config, c.Cache, funcmap.NewFuncMap(c.Web))
 }
 
-// initWeb initializes the web framework
+// initStripe initializes the stripe client
 func (c *Container) initStripe() {
 	c.Stripe = NewStripeClient(c.Config.Stripe.Key, c.Config.Stripe.URL, c.Config.Stripe.WebhookSecret)
+}
+
+// initAIs initializes the AI client
+func (c *Container) initAIs() {
+	ais, err := NewAIClient(c.Config.AIs)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create ai clients: %v", err))
+	}
+	c.AIs = ais
 }
 
 // initMail initialize the mail client

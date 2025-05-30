@@ -43,11 +43,13 @@ type UserEdges struct {
 	Products []*Product `json:"Products,omitempty"`
 	// ModelNames holds the value of the ModelNames edge.
 	ModelNames []*ModelName `json:"ModelNames,omitempty"`
+	// AIs holds the value of the AIs edge.
+	AIs []*AI `json:"AIs,omitempty"`
 	// Owner holds the value of the owner edge.
 	Owner []*PasswordToken `json:"owner,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // PricesOrErr returns the Prices value or an error if the edge
@@ -77,10 +79,19 @@ func (e UserEdges) ModelNamesOrErr() ([]*ModelName, error) {
 	return nil, &NotLoadedError{edge: "ModelNames"}
 }
 
+// AIsOrErr returns the AIs value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) AIsOrErr() ([]*AI, error) {
+	if e.loadedTypes[3] {
+		return e.AIs, nil
+	}
+	return nil, &NotLoadedError{edge: "AIs"}
+}
+
 // OwnerOrErr returns the Owner value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) OwnerOrErr() ([]*PasswordToken, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Owner, nil
 	}
 	return nil, &NotLoadedError{edge: "owner"}
@@ -182,6 +193,11 @@ func (u *User) QueryProducts() *ProductQuery {
 // QueryModelNames queries the "ModelNames" edge of the User entity.
 func (u *User) QueryModelNames() *ModelNameQuery {
 	return NewUserClient(u.config).QueryModelNames(u)
+}
+
+// QueryAIs queries the "AIs" edge of the User entity.
+func (u *User) QueryAIs() *AIQuery {
+	return NewUserClient(u.config).QueryAIs(u)
 }
 
 // QueryOwner queries the "owner" edge of the User entity.

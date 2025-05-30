@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/ai"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/price"
@@ -27,6 +28,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AI is the client for interacting with the AI builders.
+	AI *AIClient
 	// ModelName is the client for interacting with the ModelName builders.
 	ModelName *ModelNameClient
 	// PasswordToken is the client for interacting with the PasswordToken builders.
@@ -48,6 +51,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AI = NewAIClient(c.config)
 	c.ModelName = NewModelNameClient(c.config)
 	c.PasswordToken = NewPasswordTokenClient(c.config)
 	c.Price = NewPriceClient(c.config)
@@ -145,6 +149,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:           ctx,
 		config:        cfg,
+		AI:            NewAIClient(cfg),
 		ModelName:     NewModelNameClient(cfg),
 		PasswordToken: NewPasswordTokenClient(cfg),
 		Price:         NewPriceClient(cfg),
@@ -169,6 +174,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:           ctx,
 		config:        cfg,
+		AI:            NewAIClient(cfg),
 		ModelName:     NewModelNameClient(cfg),
 		PasswordToken: NewPasswordTokenClient(cfg),
 		Price:         NewPriceClient(cfg),
@@ -180,7 +186,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		ModelName.
+//		AI.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -202,26 +208,28 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.ModelName.Use(hooks...)
-	c.PasswordToken.Use(hooks...)
-	c.Price.Use(hooks...)
-	c.Product.Use(hooks...)
-	c.User.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.AI, c.ModelName, c.PasswordToken, c.Price, c.Product, c.User,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.ModelName.Intercept(interceptors...)
-	c.PasswordToken.Intercept(interceptors...)
-	c.Price.Intercept(interceptors...)
-	c.Product.Intercept(interceptors...)
-	c.User.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.AI, c.ModelName, c.PasswordToken, c.Price, c.Product, c.User,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AIMutation:
+		return c.AI.mutate(ctx, m)
 	case *ModelNameMutation:
 		return c.ModelName.mutate(ctx, m)
 	case *PasswordTokenMutation:
@@ -234,6 +242,155 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AIClient is a client for the AI schema.
+type AIClient struct {
+	config
+}
+
+// NewAIClient returns a client for the AI from the given config.
+func NewAIClient(c config) *AIClient {
+	return &AIClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `ai.Hooks(f(g(h())))`.
+func (c *AIClient) Use(hooks ...Hook) {
+	c.hooks.AI = append(c.hooks.AI, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `ai.Intercept(f(g(h())))`.
+func (c *AIClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AI = append(c.inters.AI, interceptors...)
+}
+
+// Create returns a builder for creating a AI entity.
+func (c *AIClient) Create() *AICreate {
+	mutation := newAIMutation(c.config, OpCreate)
+	return &AICreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AI entities.
+func (c *AIClient) CreateBulk(builders ...*AICreate) *AICreateBulk {
+	return &AICreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AIClient) MapCreateBulk(slice any, setFunc func(*AICreate, int)) *AICreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AICreateBulk{err: fmt.Errorf("calling to AIClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AICreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AICreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AI.
+func (c *AIClient) Update() *AIUpdate {
+	mutation := newAIMutation(c.config, OpUpdate)
+	return &AIUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AIClient) UpdateOne(a *AI) *AIUpdateOne {
+	mutation := newAIMutation(c.config, OpUpdateOne, withAI(a))
+	return &AIUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AIClient) UpdateOneID(id int) *AIUpdateOne {
+	mutation := newAIMutation(c.config, OpUpdateOne, withAIID(id))
+	return &AIUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AI.
+func (c *AIClient) Delete() *AIDelete {
+	mutation := newAIMutation(c.config, OpDelete)
+	return &AIDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AIClient) DeleteOne(a *AI) *AIDeleteOne {
+	return c.DeleteOneID(a.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AIClient) DeleteOneID(id int) *AIDeleteOne {
+	builder := c.Delete().Where(ai.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AIDeleteOne{builder}
+}
+
+// Query returns a query builder for AI.
+func (c *AIClient) Query() *AIQuery {
+	return &AIQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAI},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AI entity by its id.
+func (c *AIClient) Get(ctx context.Context, id int) (*AI, error) {
+	return c.Query().Where(ai.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AIClient) GetX(ctx context.Context, id int) *AI {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a AI.
+func (c *AIClient) QueryUser(a *AI) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ai.Table, ai.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ai.UserTable, ai.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AIClient) Hooks() []Hook {
+	return c.hooks.AI
+}
+
+// Interceptors returns the client interceptors.
+func (c *AIClient) Interceptors() []Interceptor {
+	return c.inters.AI
+}
+
+func (c *AIClient) mutate(ctx context.Context, m *AIMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AICreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AIUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AIUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AIDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AI mutation op: %q", m.Op())
 	}
 }
 
@@ -1021,6 +1178,22 @@ func (c *UserClient) QueryModelNames(u *User) *ModelNameQuery {
 	return query
 }
 
+// QueryAIs queries the AIs edge of a User.
+func (c *UserClient) QueryAIs(u *User) *AIQuery {
+	query := (&AIClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(ai.Table, ai.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.AIsTable, user.AIsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryOwner queries the owner edge of a User.
 func (c *UserClient) QueryOwner(u *User) *PasswordTokenQuery {
 	query := (&PasswordTokenClient{config: c.config}).Query()
@@ -1066,9 +1239,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		ModelName, PasswordToken, Price, Product, User []ent.Hook
+		AI, ModelName, PasswordToken, Price, Product, User []ent.Hook
 	}
 	inters struct {
-		ModelName, PasswordToken, Price, Product, User []ent.Interceptor
+		AI, ModelName, PasswordToken, Price, Product, User []ent.Interceptor
 	}
 )
