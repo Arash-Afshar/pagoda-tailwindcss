@@ -11,6 +11,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/ai"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/predicate"
@@ -28,12 +29,698 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeAI            = "AI"
 	TypeModelName     = "ModelName"
 	TypePasswordToken = "PasswordToken"
 	TypePrice         = "Price"
 	TypeProduct       = "Product"
 	TypeUser          = "User"
 )
+
+// AIMutation represents an operation that mutates the AI nodes in the graph.
+type AIMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	ai_client_name *string
+	prompt         *string
+	status         *ai.Status
+	result         *[]byte
+	created_at     *time.Time
+	completed_at   *time.Time
+	clearedFields  map[string]struct{}
+	user           *int
+	cleareduser    bool
+	done           bool
+	oldValue       func(context.Context) (*AI, error)
+	predicates     []predicate.AI
+}
+
+var _ ent.Mutation = (*AIMutation)(nil)
+
+// aiOption allows management of the mutation configuration using functional options.
+type aiOption func(*AIMutation)
+
+// newAIMutation creates new mutation for the AI entity.
+func newAIMutation(c config, op Op, opts ...aiOption) *AIMutation {
+	m := &AIMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAI,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAIID sets the ID field of the mutation.
+func withAIID(id int) aiOption {
+	return func(m *AIMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AI
+		)
+		m.oldValue = func(ctx context.Context) (*AI, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AI.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAI sets the old AI of the mutation.
+func withAI(node *AI) aiOption {
+	return func(m *AIMutation) {
+		m.oldValue = func(context.Context) (*AI, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AIMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AIMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AIMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AIMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().AI.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetAiClientName sets the "ai_client_name" field.
+func (m *AIMutation) SetAiClientName(s string) {
+	m.ai_client_name = &s
+}
+
+// AiClientName returns the value of the "ai_client_name" field in the mutation.
+func (m *AIMutation) AiClientName() (r string, exists bool) {
+	v := m.ai_client_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAiClientName returns the old "ai_client_name" field's value of the AI entity.
+// If the AI object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AIMutation) OldAiClientName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAiClientName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAiClientName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAiClientName: %w", err)
+	}
+	return oldValue.AiClientName, nil
+}
+
+// ResetAiClientName resets all changes to the "ai_client_name" field.
+func (m *AIMutation) ResetAiClientName() {
+	m.ai_client_name = nil
+}
+
+// SetPrompt sets the "prompt" field.
+func (m *AIMutation) SetPrompt(s string) {
+	m.prompt = &s
+}
+
+// Prompt returns the value of the "prompt" field in the mutation.
+func (m *AIMutation) Prompt() (r string, exists bool) {
+	v := m.prompt
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrompt returns the old "prompt" field's value of the AI entity.
+// If the AI object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AIMutation) OldPrompt(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPrompt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPrompt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrompt: %w", err)
+	}
+	return oldValue.Prompt, nil
+}
+
+// ResetPrompt resets all changes to the "prompt" field.
+func (m *AIMutation) ResetPrompt() {
+	m.prompt = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *AIMutation) SetStatus(a ai.Status) {
+	m.status = &a
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *AIMutation) Status() (r ai.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the AI entity.
+// If the AI object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AIMutation) OldStatus(ctx context.Context) (v ai.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *AIMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetResult sets the "result" field.
+func (m *AIMutation) SetResult(b []byte) {
+	m.result = &b
+}
+
+// Result returns the value of the "result" field in the mutation.
+func (m *AIMutation) Result() (r []byte, exists bool) {
+	v := m.result
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResult returns the old "result" field's value of the AI entity.
+// If the AI object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AIMutation) OldResult(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResult is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResult requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResult: %w", err)
+	}
+	return oldValue.Result, nil
+}
+
+// ResetResult resets all changes to the "result" field.
+func (m *AIMutation) ResetResult() {
+	m.result = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *AIMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *AIMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the AI entity.
+// If the AI object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AIMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *AIMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetCompletedAt sets the "completed_at" field.
+func (m *AIMutation) SetCompletedAt(t time.Time) {
+	m.completed_at = &t
+}
+
+// CompletedAt returns the value of the "completed_at" field in the mutation.
+func (m *AIMutation) CompletedAt() (r time.Time, exists bool) {
+	v := m.completed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompletedAt returns the old "completed_at" field's value of the AI entity.
+// If the AI object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AIMutation) OldCompletedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompletedAt: %w", err)
+	}
+	return oldValue.CompletedAt, nil
+}
+
+// ClearCompletedAt clears the value of the "completed_at" field.
+func (m *AIMutation) ClearCompletedAt() {
+	m.completed_at = nil
+	m.clearedFields[ai.FieldCompletedAt] = struct{}{}
+}
+
+// CompletedAtCleared returns if the "completed_at" field was cleared in this mutation.
+func (m *AIMutation) CompletedAtCleared() bool {
+	_, ok := m.clearedFields[ai.FieldCompletedAt]
+	return ok
+}
+
+// ResetCompletedAt resets all changes to the "completed_at" field.
+func (m *AIMutation) ResetCompletedAt() {
+	m.completed_at = nil
+	delete(m.clearedFields, ai.FieldCompletedAt)
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *AIMutation) SetUserID(id int) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *AIMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *AIMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *AIMutation) UserID() (id int, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *AIMutation) UserIDs() (ids []int) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *AIMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the AIMutation builder.
+func (m *AIMutation) Where(ps ...predicate.AI) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AIMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AIMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.AI, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AIMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AIMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (AI).
+func (m *AIMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AIMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.ai_client_name != nil {
+		fields = append(fields, ai.FieldAiClientName)
+	}
+	if m.prompt != nil {
+		fields = append(fields, ai.FieldPrompt)
+	}
+	if m.status != nil {
+		fields = append(fields, ai.FieldStatus)
+	}
+	if m.result != nil {
+		fields = append(fields, ai.FieldResult)
+	}
+	if m.created_at != nil {
+		fields = append(fields, ai.FieldCreatedAt)
+	}
+	if m.completed_at != nil {
+		fields = append(fields, ai.FieldCompletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AIMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case ai.FieldAiClientName:
+		return m.AiClientName()
+	case ai.FieldPrompt:
+		return m.Prompt()
+	case ai.FieldStatus:
+		return m.Status()
+	case ai.FieldResult:
+		return m.Result()
+	case ai.FieldCreatedAt:
+		return m.CreatedAt()
+	case ai.FieldCompletedAt:
+		return m.CompletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AIMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case ai.FieldAiClientName:
+		return m.OldAiClientName(ctx)
+	case ai.FieldPrompt:
+		return m.OldPrompt(ctx)
+	case ai.FieldStatus:
+		return m.OldStatus(ctx)
+	case ai.FieldResult:
+		return m.OldResult(ctx)
+	case ai.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case ai.FieldCompletedAt:
+		return m.OldCompletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown AI field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AIMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case ai.FieldAiClientName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAiClientName(v)
+		return nil
+	case ai.FieldPrompt:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrompt(v)
+		return nil
+	case ai.FieldStatus:
+		v, ok := value.(ai.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case ai.FieldResult:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResult(v)
+		return nil
+	case ai.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case ai.FieldCompletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AI field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AIMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AIMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AIMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown AI numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AIMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(ai.FieldCompletedAt) {
+		fields = append(fields, ai.FieldCompletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AIMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AIMutation) ClearField(name string) error {
+	switch name {
+	case ai.FieldCompletedAt:
+		m.ClearCompletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown AI nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AIMutation) ResetField(name string) error {
+	switch name {
+	case ai.FieldAiClientName:
+		m.ResetAiClientName()
+		return nil
+	case ai.FieldPrompt:
+		m.ResetPrompt()
+		return nil
+	case ai.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case ai.FieldResult:
+		m.ResetResult()
+		return nil
+	case ai.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case ai.FieldCompletedAt:
+		m.ResetCompletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown AI field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AIMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, ai.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AIMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case ai.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AIMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AIMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AIMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, ai.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AIMutation) EdgeCleared(name string) bool {
+	switch name {
+	case ai.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AIMutation) ClearEdge(name string) error {
+	switch name {
+	case ai.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown AI unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AIMutation) ResetEdge(name string) error {
+	switch name {
+	case ai.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown AI edge %s", name)
+}
 
 // ModelNameMutation represents an operation that mutates the ModelName nodes in the graph.
 type ModelNameMutation struct {
@@ -2274,6 +2961,9 @@ type UserMutation struct {
 	_ModelNames        map[int]struct{}
 	removed_ModelNames map[int]struct{}
 	cleared_ModelNames bool
+	_AIs               map[int]struct{}
+	removed_AIs        map[int]struct{}
+	cleared_AIs        bool
 	owner              map[int]struct{}
 	removedowner       map[int]struct{}
 	clearedowner       bool
@@ -2758,6 +3448,60 @@ func (m *UserMutation) ResetModelNames() {
 	m.removed_ModelNames = nil
 }
 
+// AddAIIDs adds the "AIs" edge to the AI entity by ids.
+func (m *UserMutation) AddAIIDs(ids ...int) {
+	if m._AIs == nil {
+		m._AIs = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._AIs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAIs clears the "AIs" edge to the AI entity.
+func (m *UserMutation) ClearAIs() {
+	m.cleared_AIs = true
+}
+
+// AIsCleared reports if the "AIs" edge to the AI entity was cleared.
+func (m *UserMutation) AIsCleared() bool {
+	return m.cleared_AIs
+}
+
+// RemoveAIIDs removes the "AIs" edge to the AI entity by IDs.
+func (m *UserMutation) RemoveAIIDs(ids ...int) {
+	if m.removed_AIs == nil {
+		m.removed_AIs = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m._AIs, ids[i])
+		m.removed_AIs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAIs returns the removed IDs of the "AIs" edge to the AI entity.
+func (m *UserMutation) RemovedAIsIDs() (ids []int) {
+	for id := range m.removed_AIs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AIsIDs returns the "AIs" edge IDs in the mutation.
+func (m *UserMutation) AIsIDs() (ids []int) {
+	for id := range m._AIs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAIs resets all changes to the "AIs" edge.
+func (m *UserMutation) ResetAIs() {
+	m._AIs = nil
+	m.cleared_AIs = false
+	m.removed_AIs = nil
+}
+
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by ids.
 func (m *UserMutation) AddOwnerIDs(ids ...int) {
 	if m.owner == nil {
@@ -3030,7 +3774,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m._Prices != nil {
 		edges = append(edges, user.EdgePrices)
 	}
@@ -3039,6 +3783,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m._ModelNames != nil {
 		edges = append(edges, user.EdgeModelNames)
+	}
+	if m._AIs != nil {
+		edges = append(edges, user.EdgeAIs)
 	}
 	if m.owner != nil {
 		edges = append(edges, user.EdgeOwner)
@@ -3068,6 +3815,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeAIs:
+		ids := make([]ent.Value, 0, len(m._AIs))
+		for id := range m._AIs {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeOwner:
 		ids := make([]ent.Value, 0, len(m.owner))
 		for id := range m.owner {
@@ -3080,7 +3833,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removed_Prices != nil {
 		edges = append(edges, user.EdgePrices)
 	}
@@ -3089,6 +3842,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removed_ModelNames != nil {
 		edges = append(edges, user.EdgeModelNames)
+	}
+	if m.removed_AIs != nil {
+		edges = append(edges, user.EdgeAIs)
 	}
 	if m.removedowner != nil {
 		edges = append(edges, user.EdgeOwner)
@@ -3118,6 +3874,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeAIs:
+		ids := make([]ent.Value, 0, len(m.removed_AIs))
+		for id := range m.removed_AIs {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeOwner:
 		ids := make([]ent.Value, 0, len(m.removedowner))
 		for id := range m.removedowner {
@@ -3130,7 +3892,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.cleared_Prices {
 		edges = append(edges, user.EdgePrices)
 	}
@@ -3139,6 +3901,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.cleared_ModelNames {
 		edges = append(edges, user.EdgeModelNames)
+	}
+	if m.cleared_AIs {
+		edges = append(edges, user.EdgeAIs)
 	}
 	if m.clearedowner {
 		edges = append(edges, user.EdgeOwner)
@@ -3156,6 +3921,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.cleared_Products
 	case user.EdgeModelNames:
 		return m.cleared_ModelNames
+	case user.EdgeAIs:
+		return m.cleared_AIs
 	case user.EdgeOwner:
 		return m.clearedowner
 	}
@@ -3182,6 +3949,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeModelNames:
 		m.ResetModelNames()
+		return nil
+	case user.EdgeAIs:
+		m.ResetAIs()
 		return nil
 	case user.EdgeOwner:
 		m.ResetOwner()

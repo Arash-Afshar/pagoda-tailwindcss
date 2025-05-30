@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/ai"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/predicate"
@@ -30,6 +31,7 @@ type UserQuery struct {
 	withPrices     *PriceQuery
 	withProducts   *ProductQuery
 	withModelNames *ModelNameQuery
+	withAIs        *AIQuery
 	withOwner      *PasswordTokenQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -126,6 +128,28 @@ func (uq *UserQuery) QueryModelNames() *ModelNameQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(modelname.Table, modelname.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.ModelNamesTable, user.ModelNamesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAIs chains the current query on the "AIs" edge.
+func (uq *UserQuery) QueryAIs() *AIQuery {
+	query := (&AIClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(ai.Table, ai.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.AIsTable, user.AIsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -350,6 +374,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withPrices:     uq.withPrices.Clone(),
 		withProducts:   uq.withProducts.Clone(),
 		withModelNames: uq.withModelNames.Clone(),
+		withAIs:        uq.withAIs.Clone(),
 		withOwner:      uq.withOwner.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
@@ -387,6 +412,17 @@ func (uq *UserQuery) WithModelNames(opts ...func(*ModelNameQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withModelNames = query
+	return uq
+}
+
+// WithAIs tells the query-builder to eager-load the nodes that are connected to
+// the "AIs" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithAIs(opts ...func(*AIQuery)) *UserQuery {
+	query := (&AIClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withAIs = query
 	return uq
 }
 
@@ -479,10 +515,11 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			uq.withPrices != nil,
 			uq.withProducts != nil,
 			uq.withModelNames != nil,
+			uq.withAIs != nil,
 			uq.withOwner != nil,
 		}
 	)
@@ -522,6 +559,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadModelNames(ctx, query, nodes,
 			func(n *User) { n.Edges.ModelNames = []*ModelName{} },
 			func(n *User, e *ModelName) { n.Edges.ModelNames = append(n.Edges.ModelNames, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withAIs; query != nil {
+		if err := uq.loadAIs(ctx, query, nodes,
+			func(n *User) { n.Edges.AIs = []*AI{} },
+			func(n *User, e *AI) { n.Edges.AIs = append(n.Edges.AIs, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -623,6 +667,37 @@ func (uq *UserQuery) loadModelNames(ctx context.Context, query *ModelNameQuery, 
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_model_names" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadAIs(ctx context.Context, query *AIQuery, nodes []*User, init func(*User), assign func(*User, *AI)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.AI(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.AIsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_ais
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_ais" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_ais" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

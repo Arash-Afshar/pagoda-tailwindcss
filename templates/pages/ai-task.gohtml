@@ -1,0 +1,54 @@
+{{define "content"}}
+<div hx-get="{{url "ai-task"}}" hx-trigger="{{if eq .Data.Status "running"}}every 5s{{else}}none{{end}}" hx-swap="outerHTML">
+    <form id="ai-task" method="post" hx-post="{{url "ai-task.submit"}}" class="space-y-4">
+        {{template "messages" .}}
+        <div class="form-control w-full">
+            <label for="ai_client_name" class="label">
+                <span class="label-text">AI Client</span>
+            </label>
+            <select id="ai_client_name" name="ai_client_name" class="select w-full {{.Form.GetFieldStatusClass "AIClientName"}}" {{if eq .Data.Status "running"}}disabled{{end}}>
+                {{range .Data.AIClientList}}
+                    <option value="{{.}}" {{if eq . $.Data.SelectedAIClient}}selected{{end}}>{{.}}</option>
+                {{end}}
+            </select>
+            <label class="label">
+                <span class="label-text-alt">The AI client to use to generate text</span>
+            </label>
+            {{template "field-errors" (.Form.GetFieldErrors "AIClientName")}}
+        </div>
+        <div class="form-control w-full">
+            <label for="prompt" class="label">
+                <span class="label-text">Prompt</span>
+            </label>
+            <textarea id="prompt" name="prompt" class="textarea textarea-bordered w-full {{.Form.GetFieldStatusClass "Prompt"}}" {{if eq .Data.Status "running"}}disabled{{end}}>{{if .Data.Prompt}}{{.Data.Prompt}}{{else}}{{.Form.Prompt}}{{end}}</textarea>
+            <label class="label">
+                <span class="label-text-alt">The prompt the task will use to generate text</span>
+            </label>
+            {{template "field-errors" (.Form.GetFieldErrors "Prompt")}}
+        </div>
+
+        <div class="form-control w-full">
+            <label for="result" class="label">
+                <span class="label-text">Result</span>
+            </label>
+            {{if eq .Data.Status "running"}}
+                <div class="flex justify-center p-4">
+                    <span class="loading loading-spinner loading-lg"></span>
+                </div>
+            {{else}}
+                <textarea id="result" name="result" class="textarea textarea-bordered w-full {{.Form.GetFieldStatusClass "Result"}}">{{.Data.Result}}</textarea>
+            {{end}}
+            <label class="label">
+                <span class="label-text-alt">The result of the task</span>
+            </label>
+            {{template "field-errors" (.Form.GetFieldErrors "Result")}}
+        </div>
+
+        <div class="form-control mt-6 flex flex-row justify-start">
+            <button class="btn btn-primary" {{if eq .Data.Status "running"}}disabled{{end}}>Generate text</button>
+        </div>
+
+        {{template "csrf" .}}
+    </form>
+</div>
+{{end}}

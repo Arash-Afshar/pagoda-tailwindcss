@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/ai"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/predicate"
@@ -146,6 +147,21 @@ func (uu *UserUpdate) AddModelNames(m ...*ModelName) *UserUpdate {
 	return uu.AddModelNameIDs(ids...)
 }
 
+// AddAIIDs adds the "AIs" edge to the AI entity by IDs.
+func (uu *UserUpdate) AddAIIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddAIIDs(ids...)
+	return uu
+}
+
+// AddAIs adds the "AIs" edges to the AI entity.
+func (uu *UserUpdate) AddAIs(a ...*AI) *UserUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uu.AddAIIDs(ids...)
+}
+
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by IDs.
 func (uu *UserUpdate) AddOwnerIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddOwnerIDs(ids...)
@@ -227,6 +243,27 @@ func (uu *UserUpdate) RemoveModelNames(m ...*ModelName) *UserUpdate {
 		ids[i] = m[i].ID
 	}
 	return uu.RemoveModelNameIDs(ids...)
+}
+
+// ClearAIs clears all "AIs" edges to the AI entity.
+func (uu *UserUpdate) ClearAIs() *UserUpdate {
+	uu.mutation.ClearAIs()
+	return uu
+}
+
+// RemoveAIIDs removes the "AIs" edge to AI entities by IDs.
+func (uu *UserUpdate) RemoveAIIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveAIIDs(ids...)
+	return uu
+}
+
+// RemoveAIs removes "AIs" edges to AI entities.
+func (uu *UserUpdate) RemoveAIs(a ...*AI) *UserUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uu.RemoveAIIDs(ids...)
 }
 
 // ClearOwner clears all "owner" edges to the PasswordToken entity.
@@ -464,6 +501,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.AIsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AIsTable,
+			Columns: []string{user.AIsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ai.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedAIsIDs(); len(nodes) > 0 && !uu.mutation.AIsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AIsTable,
+			Columns: []string{user.AIsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ai.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.AIsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AIsTable,
+			Columns: []string{user.AIsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ai.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if uu.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -644,6 +726,21 @@ func (uuo *UserUpdateOne) AddModelNames(m ...*ModelName) *UserUpdateOne {
 	return uuo.AddModelNameIDs(ids...)
 }
 
+// AddAIIDs adds the "AIs" edge to the AI entity by IDs.
+func (uuo *UserUpdateOne) AddAIIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddAIIDs(ids...)
+	return uuo
+}
+
+// AddAIs adds the "AIs" edges to the AI entity.
+func (uuo *UserUpdateOne) AddAIs(a ...*AI) *UserUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uuo.AddAIIDs(ids...)
+}
+
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by IDs.
 func (uuo *UserUpdateOne) AddOwnerIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddOwnerIDs(ids...)
@@ -725,6 +822,27 @@ func (uuo *UserUpdateOne) RemoveModelNames(m ...*ModelName) *UserUpdateOne {
 		ids[i] = m[i].ID
 	}
 	return uuo.RemoveModelNameIDs(ids...)
+}
+
+// ClearAIs clears all "AIs" edges to the AI entity.
+func (uuo *UserUpdateOne) ClearAIs() *UserUpdateOne {
+	uuo.mutation.ClearAIs()
+	return uuo
+}
+
+// RemoveAIIDs removes the "AIs" edge to AI entities by IDs.
+func (uuo *UserUpdateOne) RemoveAIIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveAIIDs(ids...)
+	return uuo
+}
+
+// RemoveAIs removes "AIs" edges to AI entities.
+func (uuo *UserUpdateOne) RemoveAIs(a ...*AI) *UserUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uuo.RemoveAIIDs(ids...)
 }
 
 // ClearOwner clears all "owner" edges to the PasswordToken entity.
@@ -985,6 +1103,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(modelname.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.AIsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AIsTable,
+			Columns: []string{user.AIsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ai.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedAIsIDs(); len(nodes) > 0 && !uuo.mutation.AIsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AIsTable,
+			Columns: []string{user.AIsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ai.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.AIsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AIsTable,
+			Columns: []string{user.AIsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ai.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

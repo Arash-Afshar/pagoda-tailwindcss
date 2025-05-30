@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/ai"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/modelname"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/passwordtoken"
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent/price"
@@ -127,6 +128,21 @@ func (uc *UserCreate) AddModelNames(m ...*ModelName) *UserCreate {
 		ids[i] = m[i].ID
 	}
 	return uc.AddModelNameIDs(ids...)
+}
+
+// AddAIIDs adds the "AIs" edge to the AI entity by IDs.
+func (uc *UserCreate) AddAIIDs(ids ...int) *UserCreate {
+	uc.mutation.AddAIIDs(ids...)
+	return uc
+}
+
+// AddAIs adds the "AIs" edges to the AI entity.
+func (uc *UserCreate) AddAIs(a ...*AI) *UserCreate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uc.AddAIIDs(ids...)
 }
 
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by IDs.
@@ -330,6 +346,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(modelname.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.AIsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AIsTable,
+			Columns: []string{user.AIsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ai.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -9,6 +9,18 @@ import (
 	"github.com/Arash-Afshar/pagoda-tailwindcss/ent"
 )
 
+// The AIFunc type is an adapter to allow the use of ordinary
+// function as AI mutator.
+type AIFunc func(context.Context, *ent.AIMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AIFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AIMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AIMutation", m)
+}
+
 // The ModelNameFunc type is an adapter to allow the use of ordinary
 // function as ModelName mutator.
 type ModelNameFunc func(context.Context, *ent.ModelNameMutation) (ent.Value, error)

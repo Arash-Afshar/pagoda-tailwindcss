@@ -53,6 +53,7 @@ func (User) Edges() []ent.Edge {
 		edge.To("Prices", Price.Type),
 		edge.To("Products", Product.Type),
 		edge.To("ModelNames", ModelName.Type),
+		edge.To("AIs", AI.Type),
 		edge.From("owner", PasswordToken.Type).
 			Ref("user"),
 	}

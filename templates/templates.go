@@ -38,15 +38,16 @@ const (
 	PageStripeSuccess  Page = "stripe-success"
 	PageStripeCancel   Page = "stripe-cancel"
 	// -------- Model Pages --------
-	PageModelPrice            Page = "model-price"
-	PageModelPriceList        Page = "model-price-list"
-	PageModelPriceForm        Page = "model-price-form"
-	PageModelProduct            Page = "model-product"
-	PageModelProductList        Page = "model-product-list"
-	PageModelProductForm        Page = "model-product-form"
+	PageModelPrice         Page = "model-price"
+	PageModelPriceList     Page = "model-price-list"
+	PageModelPriceForm     Page = "model-price-form"
+	PageModelProduct       Page = "model-product"
+	PageModelProductList   Page = "model-product-list"
+	PageModelProductForm   Page = "model-product-form"
 	PageModelModelName     Page = "model-modelname"
 	PageModelModelNameList Page = "model-modelname-list"
 	PageModelModelNameForm Page = "model-modelname-form"
+	PageAITask             Page = "ai-task"
 )
 
 //go:embed *
