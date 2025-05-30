@@ -106,6 +106,7 @@ type (
 
 	// CacheConfig stores the cache configuration
 	CacheConfig struct {
+		Choice     string
 		Redis      CacheConfigRedis
 		Otter      CacheConfigOtter
 		Expiration struct {
