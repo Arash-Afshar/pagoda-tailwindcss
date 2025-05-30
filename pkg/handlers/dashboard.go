@@ -17,8 +17,8 @@ type (
 	Dashboard struct {
 		*services.TemplateRenderer
 		db            *ent.Client
-		price *ModelPrice
-		product *ModelProduct
+		price         *ModelPrice
+		product       *ModelProduct
 		modelname     *ModelModelName
 		dashboardData *DashboardData
 	}

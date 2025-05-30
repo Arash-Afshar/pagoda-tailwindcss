@@ -14,8 +14,10 @@ type AIClient interface {
 	GenerateText(ctx context.Context, prompt string) (string, error)
 }
 
-var _ AIClient = &OllamaClient{}
-var _ AIClient = &TestClient{}
+var (
+	_ AIClient = &OllamaClient{}
+	_ AIClient = &TestClient{}
+)
 
 func NewAIClient(ais []config.AIConfig) (AIClients, error) {
 	aisMap := make(AIClients)
@@ -47,8 +49,7 @@ func (a AIClients) GetClientList() []string {
 }
 
 // ----------------------------- Ollama Client -----------------------------
-type OllamaClient struct {
-}
+type OllamaClient struct{}
 
 func NewOllamaClient(key, url string) *OllamaClient {
 	return &OllamaClient{}
@@ -59,8 +60,7 @@ func (o *OllamaClient) GenerateText(ctx context.Context, prompt string) (string,
 }
 
 // ----------------------------- Test Client -----------------------------
-type TestClient struct {
-}
+type TestClient struct{}
 
 func NewTestClient(key, url string) *TestClient {
 	return &TestClient{}
